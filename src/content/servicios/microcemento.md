@@ -5,6 +5,7 @@ idealPara:
   - Baños y cocinas
   - Salones
   - Locales
+imagen: /src/assets/servicios/microcemento-3.jpg
 orden: 8
 ---
 

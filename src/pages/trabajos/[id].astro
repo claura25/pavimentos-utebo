@@ -26,8 +26,8 @@ const suServicio = servicios.find((s) => s.id === servicio);
 const fotos = (galeria.length > 0 ? galeria : [portada]).map(imagen);
 const imagenes = await Promise.all(
   fotos.map(async (foto) => ({
-    mini: await getImage({ src: foto, width: 760, height: 570, fit: 'cover', format: 'webp' }),
-    grande: await getImage({ src: foto, width: 1500, format: 'webp' }),
+    mini: await getImage({ src: foto, width: 640, height: 480, fit: 'cover', format: 'webp', quality: 70 }),
+    grande: await getImage({ src: foto, width: 1200, format: 'webp', quality: 76 }),
   })),
 );
 

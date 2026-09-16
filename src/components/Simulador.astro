@@ -28,6 +28,7 @@ const moldeInicial = moldes.find((m) => m.id === inicial.molde)!;
         <canvas data-canvas role="img" aria-label="Foto de una obra con el pavimento elegido"></canvas>
         <div class="cargando" data-cargando><span></span>Cargando la foto…</div>
         <div class="escenas" role="group" aria-label="Escena">
+          <span class="paso-escena" aria-hidden="true">1</span>
           {
             escenas.map((e, i) => (
               <button type="button" data-escena={e.id} aria-pressed={i === 0 ? 'true' : 'false'}>
@@ -45,8 +46,14 @@ const moldeInicial = moldes.find((m) => m.id === inicial.molde)!;
     </div>
 
     <div class="panel">
+      <ol class="instrucciones">
+        <li><span>1</span> Elige dónde verlo: <strong>calle, patio o nave</strong>, con los botones sobre la foto.</li>
+        <li><span>2</span> Elige el <strong>color</strong> de la carta.</li>
+        <li><span>3</span> Pulsa cada <strong>molde</strong> para ver cómo queda.</li>
+      </ol>
+
       <fieldset class="grupo" data-grupo>
-        <legend><span class="paso">1</span> Color <span class="valor" data-valor-color>{colorInicial.nombre} {colorInicial.codigo}</span></legend>
+        <legend><span class="paso">2</span> Color <span class="valor" data-valor-color>{colorInicial.nombre} {colorInicial.codigo}</span></legend>
         <div class="colores">
           {
             colores.map((c) => (
@@ -68,7 +75,7 @@ const moldeInicial = moldes.find((m) => m.id === inicial.molde)!;
       </fieldset>
 
       <fieldset class="grupo" data-grupo>
-        <legend><span class="paso">2</span> Molde</legend>
+        <legend><span class="paso">3</span> Molde</legend>
         <div class="moldes">
           {
             moldes.map((m) => (
@@ -83,7 +90,7 @@ const moldeInicial = moldes.find((m) => m.id === inicial.molde)!;
       </fieldset>
 
       <fieldset class="grupo" data-grupo>
-        <legend><span class="paso">3</span> Desmoldeante <span class="valor">efecto envejecido</span></legend>
+        <legend><span class="paso">4</span> Desmoldeante <span class="valor">efecto envejecido</span></legend>
         <div class="chips">
           {
             desmoldeantes.map((d) => (
@@ -409,6 +416,50 @@ const moldeInicial = moldes.find((m) => m.id === inicial.molde)!;
     font-size: 0.72rem;
     text-align: right;
     color: var(--ink);
+  }
+
+  .instrucciones {
+    display: grid;
+    gap: 0.45rem;
+    margin: 0 0 1.1rem;
+    padding: 0.9rem 1rem;
+    border-radius: var(--radius);
+    background: var(--paper-2);
+    list-style: none;
+    font-size: 0.9rem;
+    line-height: 1.45;
+  }
+  .instrucciones li {
+    position: relative;
+    padding-left: 1.95rem;
+  }
+  .instrucciones li > span:first-child {
+    position: absolute;
+    left: 0;
+    top: 0.05rem;
+    display: grid;
+    place-items: center;
+    width: 1.35rem;
+    height: 1.35rem;
+    border-radius: 50%;
+    background: var(--terra);
+    color: #fff;
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    font-weight: 700;
+  }
+  .paso-escena {
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    margin: 6px 2px 6px 6px;
+    border-radius: 50%;
+    background: var(--terra);
+    color: #fff;
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    font-weight: 700;
   }
 
   .panel {

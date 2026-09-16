@@ -4,7 +4,7 @@
 
 backend:
   name: github
-  repo: usuario/pavimentos-utebo
+  repo: laura25/pavimentos-utebo
   branch: main
   site_domain: www.pavimentosutebo.es
   commit_messages:

@@ -5,6 +5,7 @@ idealPara:
   - Talleres
   - Aparcamientos
   - Pistas de juego
+imagen: /src/assets/servicios/poliuretano-pista.jpg
 orden: 6
 ---
 

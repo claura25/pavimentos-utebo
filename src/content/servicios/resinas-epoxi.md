@@ -5,6 +5,7 @@ idealPara:
   - Talleres
   - Almacenes
   - Garajes
+imagen: /src/assets/servicios/epoxi.jpg
 orden: 5
 ---
 

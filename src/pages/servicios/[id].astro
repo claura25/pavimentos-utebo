@@ -19,7 +19,7 @@ const otros = servicios.filter((s) => s.id !== servicio.id).slice(0, 4);
 const obras = (await getCollection('trabajos'))
   .filter((t) => t.data.servicio === servicio.id)
   .sort((a, b) => b.data.fecha.valueOf() - a.data.fecha.valueOf())
-  .slice(0, 3);
+  .slice(0, 6);
 ---
 
 <Layout

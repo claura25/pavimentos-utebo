@@ -4,6 +4,7 @@ resumen: Morteros muy fluidos que dejan una base lisa y nivelada, lista para tar
 idealPara:
   - Reformas interiores
   - Base para tarima y vinilo
+imagen: /src/assets/servicios/autonivelante.jpg
 orden: 7
 ---
 

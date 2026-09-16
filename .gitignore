@@ -17,3 +17,7 @@ FOTOS WEB PAVIMENTOS UTEBO/
 *.log
 .env
 .env.*
+
+# Carpeta de demo provisional
+demo/
+*.zip
