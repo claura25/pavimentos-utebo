@@ -205,10 +205,16 @@ export function crearSimulador(
   let sueloListo = false;
   let escenaLista = false;
 
+  let pedirRender = true;
+  const repintar = () => {
+    pedirRender = true;
+  };
+
   const pintar = (c: Capa) => {
     if (!c.gen) return;
     componer(c.gen, color, desmoldeante, c.albedo.image.data as Uint8Array);
     c.albedo.needsUpdate = true;
+    repintar();
   };
 
   const cargarCapa = (c: Capa, id: string, g: Generado) => {
@@ -217,6 +223,7 @@ export function crearSimulador(
     (c.normal.image.data as Uint8Array).set(g.normal);
     c.normal.needsUpdate = true;
     pintar(c);
+    repintar();
   };
 
   const enlazar = () => {
@@ -313,6 +320,7 @@ export function crearSimulador(
       const m4 = new THREE.Matrix4().makeRotationY(e.guinada).multiply(new THREE.Matrix4().makeRotationX(-e.cabeceo));
       uniforms.uRot.value.setFromMatrix4(m4);
       escenaLista = true;
+      repintar();
       eventos.alCargar?.(false);
     });
   };
@@ -342,7 +350,9 @@ export function crearSimulador(
       vh = e.alto / zoom;
       vw = vh * aspecto;
     }
+    const antes = desplazamiento.clone();
     desplazamiento.lerp(puntero, 0.04);
+    if (antes.distanceTo(desplazamiento) > 0.0004) repintar();
     const cx = e.foco[0] * e.ancho + desplazamiento.x * vw * 0.02;
     const cy = e.foco[1] * e.alto + desplazamiento.y * vh * 0.02;
     uniforms.uVista.value.set(vw, vh);
@@ -361,7 +371,10 @@ export function crearSimulador(
       if (k >= 1) terminarBarrido();
     }
     encuadrar();
-    renderer.render(escena, camara);
+    if (pedirRender || barrido !== null) {
+      renderer.render(escena, camara);
+      pedirRender = false;
+    }
     if (!avisado && sueloListo && escenaLista) {
       avisado = true;
       eventos.alListo?.();
@@ -371,7 +384,10 @@ export function crearSimulador(
   const ajustar = () => {
     const w = canvas.clientWidth;
     const h = canvas.clientHeight;
-    if (w && h) renderer.setSize(w, h, false);
+    if (w && h) {
+      renderer.setSize(w, h, false);
+      repintar();
+    }
   };
   const ro = new ResizeObserver(ajustar);
   ro.observe(canvas);
