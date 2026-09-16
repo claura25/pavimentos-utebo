@@ -17,9 +17,11 @@ const { tone = 'dark' } = Astro.props;
   .logo {
     display: inline-flex;
     align-items: center;
+    flex: none; /* que el menú no lo comprima */
   }
   img {
     width: auto;
     height: 44px;
+    max-width: none;
   }
 </style>
