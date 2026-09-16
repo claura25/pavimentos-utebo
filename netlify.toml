@@ -46,6 +46,13 @@
   status = 301
   force = true
 
+# MIENTRAS LA WEB NO ESTÉ EN SU DOMINIO: evita que Google indexe la dirección de pruebas.
+# QUITAR ESTE BLOQUE el día que se apunte pavimentosutebo.es y la web salga de verdad.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Robots-Tag = "noindex"
+
 [[headers]]
   for = "/admin/*"
   [headers.values]
