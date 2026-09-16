@@ -1,0 +1,633 @@
+---
+import { colores, desmoldeantes, inicial, moldes } from '../simulador/catalogo';
+import { escenas } from '../simulador/escenas';
+import { empresa } from '../data/empresa';
+
+const colorInicial = colores.find((c) => c.codigo === inicial.color)!;
+const moldeInicial = moldes.find((m) => m.id === inicial.molde)!;
+---
+
+<section class="sim" data-simulador>
+  <div class="wrap intro">
+    <div>
+      <p class="eyebrow">Hormigón impreso en Zaragoza</p>
+      <h1>Elige color y molde. <em>Mira tu calle</em> antes de hacerla.</h1>
+    </div>
+    <div class="intro-texto">
+      <p>
+        Más de 20 años pavimentando calles, patios y naves en Aragón. Prueba las combinaciones de nuestra carta sobre
+        fotos reales de nuestras obras y pídenos presupuesto sin compromiso.
+      </p>
+      <a class="link-arrow" href="#simulador">Probar el simulador ↓</a>
+    </div>
+  </div>
+
+  <div class="wrap config" id="simulador">
+    <div class="visor">
+      <div class="lienzo">
+        <canvas data-canvas role="img" aria-label="Foto de una obra con el pavimento elegido"></canvas>
+        <div class="cargando" data-cargando><span></span>Cargando la foto…</div>
+        <div class="escenas" role="group" aria-label="Escena">
+          {
+            escenas.map((e, i) => (
+              <button type="button" data-escena={e.id} aria-pressed={i === 0 ? 'true' : 'false'}>
+                {e.nombre}
+              </button>
+            ))
+          }
+        </div>
+        <div class="etiqueta" aria-live="polite">
+          <strong data-etiqueta-molde>{moldeInicial.nombre}</strong>
+          <span data-etiqueta-color>{colorInicial.nombre} {colorInicial.codigo}</span>
+        </div>
+        <p class="aviso">Simulación orientativa. El color real varía según el hormigón y la luz.</p>
+      </div>
+    </div>
+
+    <div class="panel">
+      <fieldset class="grupo" data-grupo>
+        <legend><span class="paso">1</span> Color <span class="valor" data-valor-color>{colorInicial.nombre} {colorInicial.codigo}</span></legend>
+        <div class="colores">
+          {
+            colores.map((c) => (
+              <button
+                type="button"
+                class="color"
+                style={`--c:${c.hex}`}
+                data-color={c.codigo}
+                aria-pressed={c.codigo === inicial.color ? 'true' : 'false'}
+                title={`${c.nombre} ${c.codigo}`}
+              >
+                <span class="sr-only">
+                  {c.nombre} {c.codigo}
+                </span>
+              </button>
+            ))
+          }
+        </div>
+      </fieldset>
+
+      <fieldset class="grupo" data-grupo>
+        <legend><span class="paso">2</span> Molde</legend>
+        <div class="moldes">
+          {
+            moldes.map((m) => (
+              <button type="button" class="molde" data-molde={m.id} aria-pressed={m.id === inicial.molde ? 'true' : 'false'}>
+                <canvas width="160" height="160" data-miniatura={m.id} aria-hidden="true" />
+                <span class="molde-nombre">{m.nombre}</span>
+                <span class="molde-codigo">{m.codigo}</span>
+              </button>
+            ))
+          }
+        </div>
+      </fieldset>
+
+      <fieldset class="grupo" data-grupo>
+        <legend><span class="paso">3</span> Desmoldeante <span class="valor">efecto envejecido</span></legend>
+        <div class="chips">
+          {
+            desmoldeantes.map((d) => (
+              <button type="button" class="chip" data-desmoldeante={d.id} aria-pressed={d.id === inicial.desmoldeante ? 'true' : 'false'}>
+                <span class="punto" style={d.hex ? `--c:${d.hex}` : undefined} />
+                {d.nombre}
+              </button>
+            ))
+          }
+        </div>
+      </fieldset>
+
+      <div class="resumen">
+        <p class="resumen-titulo">Tu combinación</p>
+        <p class="resumen-texto" data-resumen>
+          {moldeInicial.nombre} · {colorInicial.nombre} {colorInicial.codigo} · Sin desmoldeante
+        </p>
+        <a class="btn btn-primary" href="/contacto/#presupuesto" data-cta>Pide presupuesto con esta combinación</a>
+        <a class="whatsapp" href={empresa.whatsapp} target="_blank" rel="noopener" data-whatsapp>o envíanosla por WhatsApp</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { colores, desmoldeantes, inicial, moldes } from '../simulador/catalogo';
+  import { escenas } from '../simulador/escenas';
+  import { hexARgb, miniatura } from '../simulador/texturas';
+  import type { Simulador } from '../simulador/fotoescena';
+
+  type Clave = 'color' | 'molde' | 'desmoldeante';
+
+  const raiz = document.querySelector<HTMLElement>('[data-simulador]');
+  if (raiz) iniciar(raiz);
+
+  function iniciar(raiz: HTMLElement) {
+    const $ = <T extends Element>(s: string) => raiz.querySelector<T>(s)!;
+    const color = new Map(colores.map((c) => [c.codigo, c]));
+    const molde = new Map(moldes.map((m) => [m.id, m]));
+    const desmoldeante = new Map(desmoldeantes.map((d) => [d.id, d]));
+    const definiciones = Object.fromEntries(moldes.map((m) => [m.id, m.def]));
+
+    const elegido: Record<Clave, string> = { ...inicial };
+    const vista: Record<Clave, string> = { ...inicial };
+    let simulador: Simulador | null = null;
+    let tonoMiniaturas = '';
+    let respaldo: CanvasRenderingContext2D | null = null;
+
+    const canvas = $<HTMLCanvasElement>('[data-canvas]');
+    const cargando = $<HTMLElement>('[data-cargando]');
+
+    function pintarMiniaturas() {
+      const c = color.get(vista.color)!;
+      const d = desmoldeante.get(vista.desmoldeante)!;
+      const tono = c.hex + d.hex;
+      if (tono === tonoMiniaturas) return;
+      tonoMiniaturas = tono;
+      const rgb = hexARgb(c.hex);
+      const desm = d.hex ? hexARgb(d.hex) : null;
+      raiz.querySelectorAll<HTMLCanvasElement>('[data-miniatura]').forEach((lienzo) => {
+        const def = molde.get(lienzo.dataset.miniatura!)!.def;
+        const px = miniatura(def, rgb, desm, lienzo.width, 1.2);
+        lienzo.getContext('2d')!.putImageData(new ImageData(px as ImageDataArray, lienzo.width, lienzo.height), 0, 0);
+      });
+    }
+
+    function pintarRespaldo() {
+      if (!respaldo) return;
+      const lado = 512;
+      const c = color.get(vista.color)!;
+      const d = desmoldeante.get(vista.desmoldeante)!;
+      const px = miniatura(molde.get(vista.molde)!.def, hexARgb(c.hex), d.hex ? hexARgb(d.hex) : null, lado, 2.4);
+      canvas.width = lado;
+      canvas.height = lado;
+      respaldo.putImageData(new ImageData(px as ImageDataArray, lado, lado), 0, 0);
+    }
+
+    let pendiente = 0;
+    function aplicar() {
+      const c = color.get(vista.color)!;
+      const m = molde.get(vista.molde)!;
+      const d = desmoldeante.get(vista.desmoldeante)!;
+      simulador?.setCombinacion(m.id, c.hex, d.hex);
+      $('[data-etiqueta-molde]').textContent = m.nombre;
+      $('[data-etiqueta-color]').textContent = `${c.nombre} ${c.codigo}${d.hex ? ` · desmoldeante ${d.nombre.toLowerCase()}` : ''}`;
+      $('[data-valor-color]').textContent = `${c.nombre} ${c.codigo}`;
+      cancelAnimationFrame(pendiente);
+      pendiente = requestAnimationFrame(() => {
+        pintarMiniaturas();
+        pintarRespaldo();
+      });
+    }
+
+    function resumir() {
+      const c = color.get(elegido.color)!;
+      const m = molde.get(elegido.molde)!;
+      const d = desmoldeante.get(elegido.desmoldeante)!;
+      const texto = `${m.nombre} · ${c.nombre} ${c.codigo} · ${d.nombre}`;
+      $('[data-resumen]').textContent = texto;
+      const params = new URLSearchParams({ molde: `${m.nombre} (${m.codigo})`, color: `${c.nombre} ${c.codigo}`, desmoldeante: d.nombre });
+      $<HTMLAnchorElement>('[data-cta]').href = `/contacto/?${params}#presupuesto`;
+      const wa = $<HTMLAnchorElement>('[data-whatsapp]');
+      const url = new URL(wa.href);
+      url.search = new URLSearchParams({ text: `Hola, me interesa un presupuesto de hormigón impreso: ${texto}` }).toString();
+      wa.href = url.toString();
+    }
+
+    function leer(b: HTMLElement): [Clave, string] {
+      if (b.dataset.color) return ['color', b.dataset.color];
+      if (b.dataset.molde) return ['molde', b.dataset.molde];
+      return ['desmoldeante', b.dataset.desmoldeante!];
+    }
+
+    const botones = raiz.querySelectorAll<HTMLButtonElement>('[data-color],[data-molde],[data-desmoldeante]');
+    botones.forEach((b) => {
+      const [clave, valor] = leer(b);
+      const previsualizar = () => {
+        vista[clave] = valor;
+        aplicar();
+      };
+      b.addEventListener('pointerenter', (e) => e.pointerType === 'mouse' && previsualizar());
+      b.addEventListener('focus', previsualizar);
+      b.addEventListener('click', () => {
+        elegido[clave] = valor;
+        Object.assign(vista, elegido);
+        botones.forEach((otro) => {
+          const [k, v] = leer(otro);
+          otro.setAttribute('aria-pressed', String(elegido[k] === v));
+        });
+        aplicar();
+        resumir();
+      });
+    });
+
+    raiz.querySelectorAll<HTMLElement>('[data-grupo]').forEach((g) => {
+      const restaurar = () => {
+        Object.assign(vista, elegido);
+        aplicar();
+      };
+      g.addEventListener('pointerleave', restaurar);
+      g.addEventListener('focusout', (e) => {
+        if (!g.contains(e.relatedTarget as Node)) restaurar();
+      });
+    });
+
+    const pestanas = raiz.querySelectorAll<HTMLButtonElement>('[data-escena]');
+    pestanas.forEach((p) =>
+      p.addEventListener('click', () => {
+        pestanas.forEach((otra) => otra.setAttribute('aria-pressed', String(otra === p)));
+        simulador?.setEscena(p.dataset.escena!);
+      }),
+    );
+
+    pintarMiniaturas();
+    resumir();
+
+    let listo = false;
+    import('../simulador/fotoescena')
+      .then(({ crearSimulador }) => {
+        const c = color.get(vista.color)!;
+        const d = desmoldeante.get(vista.desmoldeante)!;
+        simulador = crearSimulador(
+          canvas,
+          definiciones,
+          escenas,
+          { escena: escenas[0].id, molde: vista.molde, color: c.hex, desmoldeante: d.hex },
+          {
+            alListo: () => {
+              listo = true;
+              cargando.hidden = true;
+            },
+            alCargar: (activo) => {
+              cargando.hidden = listo ? !activo : false;
+            },
+          },
+        );
+      })
+      .catch((error) => {
+        console.warn('Simulador no disponible, se muestra vista cenital', error);
+        respaldo = canvas.getContext('2d');
+        raiz.classList.add('sin-webgl');
+        raiz.querySelector<HTMLElement>('.escenas')!.hidden = true;
+        cargando.hidden = true;
+        pintarRespaldo();
+      });
+  }
+</script>
+
+<style>
+  .sim {
+    padding-top: clamp(2rem, 5vw, 3.5rem);
+    padding-bottom: clamp(3rem, 6vw, 5rem);
+  }
+  .intro {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    align-items: end;
+    gap: 1.5rem 3rem;
+    margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
+  }
+  h1 {
+    margin-top: 0.9rem;
+    font-size: clamp(2.6rem, 6.2vw, 5.4rem);
+  }
+  h1 em {
+    font-style: normal;
+    color: var(--terra);
+  }
+  .intro-texto {
+    display: grid;
+    justify-items: start;
+    gap: 1rem;
+    padding-bottom: 0.5rem;
+    font-size: 1.08rem;
+    color: var(--muted);
+  }
+
+  .config {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 392px;
+    align-items: start;
+    gap: 1.25rem;
+  }
+  .visor {
+    position: sticky;
+    top: calc(var(--header-h) + 12px);
+  }
+  .lienzo {
+    position: relative;
+    height: clamp(460px, calc(100vh - var(--header-h) - 40px), 760px);
+    overflow: hidden;
+    border-radius: var(--radius);
+    background: var(--paper-2);
+  }
+  .lienzo canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    touch-action: pan-y;
+  }
+  .sin-webgl .lienzo canvas {
+    object-fit: cover;
+  }
+  .cargando {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 0.9rem;
+    background: rgba(233, 228, 219, 0.7);
+    font-weight: 500;
+    color: var(--ink);
+  }
+  .cargando span {
+    width: 34px;
+    height: 34px;
+    border: 3px solid rgba(29, 27, 24, 0.15);
+    border-top-color: var(--terra);
+    border-radius: 50%;
+    animation: girar 0.8s linear infinite;
+  }
+  @keyframes girar {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  .escenas {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    display: flex;
+    gap: 2px;
+    padding: 3px;
+    border-radius: 99px;
+    background: rgba(29, 27, 24, 0.72);
+  }
+  .escenas button {
+    min-height: 34px;
+    padding: 0 1rem;
+    border: 0;
+    border-radius: 99px;
+    background: transparent;
+    color: #fff;
+    font-size: 0.88rem;
+    font-weight: 500;
+  }
+  .escenas button[aria-pressed='true'] {
+    background: #fff;
+    color: var(--ink);
+  }
+  .etiqueta {
+    position: absolute;
+    left: 1rem;
+    bottom: 1rem;
+    display: grid;
+    gap: 0.1rem;
+    max-width: calc(100% - 2rem);
+    padding: 0.75rem 1rem;
+    border-left: 3px solid var(--terra);
+    background: rgba(29, 27, 24, 0.82);
+    color: #fff;
+  }
+  .etiqueta strong {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1;
+    text-transform: uppercase;
+  }
+  .etiqueta span {
+    font-size: 0.88rem;
+    color: #e6dfd3;
+  }
+  .aviso {
+    position: absolute;
+    right: 1rem;
+    bottom: 1rem;
+    max-width: 30ch;
+    padding: 0.3rem 0.6rem;
+    border-radius: 2px;
+    background: rgba(255, 253, 250, 0.75);
+    font-size: 0.72rem;
+    text-align: right;
+    color: var(--ink);
+  }
+
+  .panel {
+    display: grid;
+    gap: 0.25rem;
+    padding: 1.25rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--white);
+  }
+  .grupo {
+    min-width: 0;
+    margin: 0;
+    padding: 0 0 1.25rem;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .grupo + .grupo {
+    padding-top: 1rem;
+  }
+  legend {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    margin-bottom: 0.85rem;
+    padding: 0;
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .paso {
+    display: grid;
+    place-items: center;
+    width: 1.6rem;
+    height: 1.6rem;
+    border-radius: 50%;
+    background: var(--ink);
+    color: #fff;
+    font-size: 0.95rem;
+  }
+  .valor {
+    margin-left: auto;
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    font-weight: 500;
+    text-transform: none;
+    color: var(--muted);
+  }
+
+  button {
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+  }
+  .colores {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 5px;
+  }
+  .color {
+    aspect-ratio: 1;
+    padding: 0;
+    border: 0;
+    border-radius: 2px;
+    background: var(--c);
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+    transition: transform 0.15s;
+  }
+  .color:hover {
+    transform: scale(1.12);
+  }
+  .color[aria-pressed='true'] {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
+  }
+
+  .moldes {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .molde {
+    display: grid;
+    gap: 0.15rem;
+    padding: 4px 4px 7px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--paper);
+    text-align: left;
+    transition: border-color 0.15s;
+  }
+  .molde:hover {
+    border-color: var(--muted-light);
+  }
+  .molde[aria-pressed='true'] {
+    border-color: var(--terra);
+    box-shadow: inset 0 0 0 1px var(--terra);
+  }
+  .molde canvas {
+    width: 100%;
+    aspect-ratio: 1;
+    margin-bottom: 0.2rem;
+    border-radius: 2px;
+    background: var(--paper-2);
+  }
+  .molde-nombre {
+    padding-inline: 2px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+  .molde-codigo {
+    padding-inline: 2px;
+    font-size: 0.68rem;
+    color: var(--muted);
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-height: 36px;
+    padding: 0 0.8rem 0 0.5rem;
+    border: 1px solid var(--line);
+    border-radius: 99px;
+    background: var(--paper);
+    font-size: 0.85rem;
+  }
+  .chip[aria-pressed='true'] {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: #fff;
+  }
+  .punto {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--c, repeating-linear-gradient(45deg, #fff 0 3px, #ddd 3px 6px));
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.2);
+  }
+
+  .resumen {
+    display: grid;
+    gap: 0.6rem;
+    padding-top: 1rem;
+  }
+  .resumen-titulo {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .resumen-texto {
+    font-weight: 600;
+  }
+  .resumen .btn {
+    font-size: 1.05rem;
+    white-space: normal;
+    text-align: center;
+  }
+  .whatsapp {
+    justify-self: center;
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+
+  @media (max-width: 1000px) {
+    .intro {
+      grid-template-columns: 1fr;
+    }
+    .config {
+      grid-template-columns: 1fr;
+    }
+    .visor {
+      top: var(--header-h);
+      z-index: 5;
+      margin-inline: calc(var(--gutter) * -1);
+    }
+    .lienzo {
+      height: 46vh;
+      min-height: 280px;
+      border-radius: 0;
+    }
+    .aviso {
+      display: none;
+    }
+    .moldes {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+  @media (max-width: 560px) {
+    .panel {
+      padding: 1rem;
+    }
+    .moldes {
+      grid-auto-flow: column;
+      grid-template-columns: none;
+      grid-auto-columns: 31%;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      padding-bottom: 4px;
+    }
+    .molde {
+      scroll-snap-align: start;
+    }
+    .etiqueta strong {
+      font-size: 1.2rem;
+    }
+    .escenas {
+      top: 0.6rem;
+      left: 0.6rem;
+    }
+  }
+</style>

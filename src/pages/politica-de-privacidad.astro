@@ -1,0 +1,82 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { empresa } from '../data/empresa';
+
+const d = empresa.direccion;
+---
+
+<Layout
+  title="Política de privacidad · Pavimentos Utebo"
+  description="Cómo trata Pavimentos Utebo 2012 S.L.U. los datos personales que facilitas al pedir presupuesto."
+>
+  <header class="hero-pagina wrap">
+    <ul class="migas">
+      <li><a href="/">Inicio</a></li>
+      <li>/</li>
+      <li>Política de privacidad</li>
+    </ul>
+    <h1>Política de privacidad</h1>
+  </header>
+
+  <section class="wrap texto">
+    <div class="prosa">
+      <h2>Responsable del tratamiento</h2>
+      <ul>
+        <li>{empresa.razonSocial}</li>
+        <li>NIF: [pendiente de facilitar por la empresa]</li>
+        <li>Domicilio: {d.calle}, {d.cp} {d.localidad} ({d.provincia})</li>
+        <li>Correo electrónico: {empresa.email}</li>
+      </ul>
+
+      <h2>Qué datos tratamos y para qué</h2>
+      <p>
+        Tratamos los datos que nos facilitas en el formulario de presupuesto o cuando nos escribes por correo o
+        WhatsApp: nombre, teléfono, correo electrónico, localidad de la obra y la información que nos cuentes sobre
+        ella. Los usamos únicamente para responderte, preparar el presupuesto y, si nos contratas, gestionar el
+        trabajo.
+      </p>
+
+      <h2>Base legal</h2>
+      <p>
+        El tratamiento se basa en tu consentimiento al enviarnos la solicitud y, en su caso, en la ejecución del
+        contrato o de las gestiones previas a él.
+      </p>
+
+      <h2>Cuánto tiempo los conservamos</h2>
+      <p>
+        Conservamos los datos mientras dure la relación y, después, durante los plazos exigidos por la normativa fiscal
+        y mercantil. Si tu solicitud no acaba en contrato, los eliminamos cuando dejen de ser necesarios.
+      </p>
+
+      <h2>A quién se los comunicamos</h2>
+      <p>
+        No cedemos tus datos a terceros, salvo obligación legal. Pueden acceder a ellos los proveedores que nos prestan
+        servicios de correo electrónico y alojamiento web, que actúan como encargados del tratamiento.
+      </p>
+
+      <h2>Tus derechos</h2>
+      <p>
+        Puedes solicitar el acceso, la rectificación o la supresión de tus datos, así como la limitación u oposición a
+        su tratamiento y su portabilidad, escribiendo a {empresa.email}. También puedes reclamar ante la Agencia
+        Española de Protección de Datos (www.aepd.es).
+      </p>
+
+      <p class="revisar">
+        Texto pendiente de revisión por la empresa: hay que completar el NIF y confirmar quién presta los servicios de
+        correo y alojamiento antes de publicar la web.
+      </p>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .texto {
+    padding-bottom: clamp(3.5rem, 7vw, 5.5rem);
+  }
+  .revisar {
+    padding: 0.9rem 1.1rem;
+    border-left: 3px solid var(--terra);
+    background: var(--paper-2);
+    font-size: 0.92rem;
+  }
+</style>

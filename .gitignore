@@ -1,0 +1,19 @@
+# Dependencias y resultados de construcción
+node_modules/
+dist/
+.astro/
+
+# El programa del panel se copia solo desde node_modules antes de cada build
+public/admin/sveltia-cms.js
+
+# Revisiones de las escenas del simulador (imágenes de comprobación)
+herramientas/revision/
+
+# Fotos originales del cliente: se quedan en el ordenador, no en el repositorio
+FOTOS WEB PAVIMENTOS UTEBO/
+
+# Varios
+.DS_Store
+*.log
+.env
+.env.*

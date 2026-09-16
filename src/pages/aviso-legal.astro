@@ -1,0 +1,89 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { empresa } from '../data/empresa';
+
+const d = empresa.direccion;
+---
+
+<Layout
+  title="Aviso legal · Pavimentos Utebo"
+  description="Información legal sobre el titular del sitio web de Pavimentos Utebo 2012 S.L.U."
+>
+  <header class="hero-pagina wrap">
+    <ul class="migas">
+      <li><a href="/">Inicio</a></li>
+      <li>/</li>
+      <li>Aviso legal</li>
+    </ul>
+    <h1>Aviso legal</h1>
+  </header>
+
+  <section class="wrap texto">
+    <div class="prosa">
+      <h2>Titular del sitio web</h2>
+      <ul>
+        <li>Denominación social: {empresa.razonSocial}</li>
+        <li>NIF: [pendiente de facilitar por la empresa]</li>
+        <li>Domicilio: {d.calle}, {d.cp} {d.localidad} ({d.provincia})</li>
+        <li>Teléfono: {empresa.oficina.texto}</li>
+        <li>Correo electrónico: {empresa.email}</li>
+      </ul>
+
+      <h2>Objeto</h2>
+      <p>
+        Este sitio web tiene como finalidad dar a conocer los servicios de pavimentos de hormigón que presta la
+        empresa y facilitar el contacto con las personas interesadas en solicitar un presupuesto.
+      </p>
+
+      <h2>Condiciones de uso</h2>
+      <p>
+        El acceso a este sitio es gratuito y supone aceptar este aviso legal. La persona usuaria se compromete a hacer
+        un uso adecuado de los contenidos y a no emplearlos con fines ilícitos o lesivos para terceros.
+      </p>
+
+      <h2>Propiedad intelectual</h2>
+      <p>
+        Los textos, fotografías de obras, marcas y demás contenidos de este sitio pertenecen a {empresa.razonSocial} o
+        se utilizan con autorización. No está permitida su reproducción o distribución sin consentimiento previo por
+        escrito.
+      </p>
+
+      <h2>Simulador de pavimentos</h2>
+      <p>
+        Las imágenes generadas por el simulador son recreaciones orientativas. El color, la textura y el acabado final
+        dependen del hormigón, del desmoldeante, de la ejecución y de la luz, por lo que pueden diferir de lo mostrado
+        en pantalla. No tienen valor contractual.
+      </p>
+
+      <h2>Responsabilidad</h2>
+      <p>
+        La empresa procura que la información publicada esté actualizada y sea correcta, pero no puede garantizar la
+        ausencia de errores. Tampoco se responsabiliza del contenido de sitios de terceros a los que se pueda acceder
+        mediante enlaces.
+      </p>
+
+      <h2>Legislación aplicable</h2>
+      <p>
+        Esta relación se rige por la legislación española. Para cualquier controversia serán competentes los juzgados y
+        tribunales que correspondan conforme a la normativa vigente.
+      </p>
+
+      <p class="revisar">
+        Texto pendiente de revisión por la empresa: hay que completar el NIF y confirmar los datos registrales antes de
+        publicar la web.
+      </p>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .texto {
+    padding-bottom: clamp(3.5rem, 7vw, 5.5rem);
+  }
+  .revisar {
+    padding: 0.9rem 1.1rem;
+    border-left: 3px solid var(--terra);
+    background: var(--paper-2);
+    font-size: 0.92rem;
+  }
+</style>

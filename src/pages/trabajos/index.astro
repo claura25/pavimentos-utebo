@@ -1,0 +1,130 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import LlamadaFinal from '../../components/LlamadaFinal.astro';
+import TarjetaObra from '../../components/TarjetaObra.astro';
+
+const servicios = await getCollection('servicios');
+const trabajos = (await getCollection('trabajos')).sort((a, b) => b.data.fecha.valueOf() - a.data.fecha.valueOf());
+const usados = new Set(trabajos.map((t) => t.data.servicio));
+const filtros = servicios.filter((s) => usados.has(s.id));
+---
+
+<Layout
+  title="Trabajos realizados · Pavimentos Utebo"
+  description="Calles, patios, naves y urbanizaciones pavimentadas por Pavimentos Utebo en Zaragoza, Soria y Lérida. Fotos, colores y moldes de cada obra."
+>
+  <header class="hero-pagina wrap">
+    <ul class="migas">
+      <li><a href="/">Inicio</a></li>
+      <li>/</li>
+      <li>Trabajos</li>
+    </ul>
+    <p class="eyebrow">Galería</p>
+    <h1>Trabajos realizados</h1>
+    <p class="entradilla">
+      Obras que ya pisan nuestros clientes. En cada una indicamos, cuando lo sabemos, el color y el molde utilizados,
+      por si quieres repetirlos en la tuya.
+    </p>
+  </header>
+
+  <section class="wrap galeria">
+    <div class="filtros" role="group" aria-label="Filtrar por tipo de pavimento">
+      <button type="button" data-filtro="todos" aria-pressed="true">Todos</button>
+      {
+        filtros.map((s) => (
+          <button type="button" data-filtro={s.id} aria-pressed="false">
+            {s.data.titulo}
+          </button>
+        ))
+      }
+    </div>
+
+    <div class="rejilla" data-rejilla>
+      {trabajos.map((t, i) => <TarjetaObra trabajo={t} grande={i === 0} />)}
+    </div>
+    <p class="vacio" data-vacio hidden>No hay trabajos publicados con ese acabado todavía.</p>
+  </section>
+
+  <LlamadaFinal />
+</Layout>
+
+<script>
+  const botones = document.querySelectorAll<HTMLButtonElement>('[data-filtro]');
+  const obras = document.querySelectorAll<HTMLElement>('[data-rejilla] > *');
+  const vacio = document.querySelector<HTMLElement>('[data-vacio]');
+
+  botones.forEach((b) =>
+    b.addEventListener('click', () => {
+      const filtro = b.dataset.filtro!;
+      botones.forEach((otro) => otro.setAttribute('aria-pressed', String(otro === b)));
+      let visibles = 0;
+      obras.forEach((obra) => {
+        const mostrar = filtro === 'todos' || obra.dataset.servicio === filtro;
+        obra.hidden = !mostrar;
+        if (mostrar) visibles++;
+      });
+      if (vacio) vacio.hidden = visibles > 0;
+    }),
+  );
+</script>
+
+<style>
+  .galeria {
+    padding-bottom: clamp(3.5rem, 7vw, 5.5rem);
+  }
+  .filtros {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1.75rem;
+  }
+  .filtros button {
+    min-height: 40px;
+    padding: 0 1rem;
+    border: 1px solid var(--line);
+    border-radius: 99px;
+    background: var(--white);
+    font: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+  .filtros button:hover {
+    border-color: var(--ink);
+  }
+  .filtros button[aria-pressed='true'] {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: #fff;
+  }
+  .rejilla {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: clamp(230px, 22vw, 300px);
+    gap: 1rem;
+  }
+  .rejilla :global(.grande) {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+  .vacio {
+    margin-top: 2rem;
+    color: var(--muted);
+  }
+
+  @media (max-width: 900px) {
+    .rejilla {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (max-width: 600px) {
+    .rejilla {
+      grid-template-columns: 1fr;
+      grid-auto-rows: 250px;
+    }
+    .rejilla :global(.grande) {
+      grid-column: auto;
+      grid-row: auto;
+    }
+  }
+</style>

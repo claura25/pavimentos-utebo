@@ -1,0 +1,64 @@
+---
+import { empresa } from '../data/empresa';
+
+interface Props {
+  titulo?: string;
+  texto?: string;
+}
+const {
+  titulo = 'Cuéntanos tu obra y te damos presupuesto',
+  texto = 'Visitamos la obra, te asesoramos sobre el pavimento que mejor encaja y te pasamos un presupuesto sin compromiso.',
+} = Astro.props;
+---
+
+<section class="llamada">
+  <div class="wrap">
+    <div>
+      <p class="eyebrow">¿Hablamos?</p>
+      <h2>{titulo}</h2>
+      <p class="texto">{texto}</p>
+    </div>
+    <div class="botones">
+      <a class="btn btn-primary" href="/contacto/#presupuesto">Pide presupuesto</a>
+      <a class="btn btn-light" href={empresa.movil.href}>Llamar al {empresa.movil.texto}</a>
+      <a class="btn btn-light" href={empresa.whatsapp} target="_blank" rel="noopener">WhatsApp</a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .llamada {
+    background: var(--nogal);
+    color: #fff;
+  }
+  .wrap {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    align-items: center;
+    gap: clamp(1.5rem, 4vw, 3.5rem);
+    padding-block: clamp(3rem, 6vw, 4.5rem);
+  }
+  .eyebrow {
+    color: var(--sand);
+  }
+  h2 {
+    margin-top: 0.8rem;
+    font-size: clamp(2rem, 4vw, 3.2rem);
+  }
+  .texto {
+    max-width: 46ch;
+    margin-top: 0.9rem;
+    color: rgba(255, 255, 255, 0.82);
+  }
+  .botones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  @media (max-width: 800px) {
+    .wrap {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

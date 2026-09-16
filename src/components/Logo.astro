@@ -1,0 +1,25 @@
+---
+import { Image } from 'astro:assets';
+import logo from '../assets/marca/logo.png';
+import logoClaro from '../assets/marca/logo-claro.png';
+
+interface Props {
+  tone?: 'dark' | 'light';
+}
+const { tone = 'dark' } = Astro.props;
+---
+
+<a href="/" class="logo" aria-label="Pavimentos Utebo, inicio">
+  <Image src={tone === 'light' ? logoClaro : logo} alt="Pavimentos Utebo" format="png" loading="eager" />
+</a>
+
+<style>
+  .logo {
+    display: inline-flex;
+    align-items: center;
+  }
+  img {
+    width: auto;
+    height: 44px;
+  }
+</style>

@@ -1,0 +1,572 @@
+---
+import { Image } from 'astro:assets';
+import { getCollection } from 'astro:content';
+import Layout from '../layouts/Layout.astro';
+import Simulador from '../components/Simulador.astro';
+import { empresa } from '../data/empresa';
+import { imagen } from '../data/imagenes';
+import renovadoPatio from '../assets/trabajos/resinado/3.jpg';
+import renovadoPasillo from '../assets/trabajos/resinado/2.jpg';
+
+const servicios = (await getCollection('servicios')).sort((a, b) => a.data.orden - b.data.orden);
+const principales = servicios.filter((s) => s.data.destacado);
+const otros = servicios.filter((s) => !s.data.destacado);
+const trabajos = (await getCollection('trabajos'))
+  .filter((t) => t.data.destacado)
+  .sort((a, b) => b.data.fecha.valueOf() - a.data.fecha.valueOf())
+  .slice(0, 4);
+---
+
+<Layout
+  title="Pavimentos Utebo · Hormigón impreso, pulido e industrial en Zaragoza"
+  description="Hormigón impreso, pulido, lavado e industrial en Zaragoza. Más de 20 años de experiencia, director técnico y equipo propio. Prueba colores y moldes en nuestro simulador y pide presupuesto sin compromiso."
+>
+  <Simulador />
+
+  <section class="confianza" aria-label="Por qué elegirnos">
+    <ul class="wrap">
+      <li><strong>+20 años</strong><span>pavimentando en Aragón</span></li>
+      <li><strong>Director técnico</strong><span>que te asesora en cada obra</span></li>
+      <li><strong>Equipo propio</strong><span>personal cualificado</span></li>
+      <li><strong>Presupuesto</strong><span>gratis y sin compromiso</span></li>
+    </ul>
+  </section>
+
+  <section class="bloque wrap" id="servicios">
+    <header class="cabecera">
+      <p class="eyebrow">Qué hacemos</p>
+      <h2>Un pavimento para cada uso</h2>
+      <p>Del patio de una vivienda a la solera de una nave industrial. Te recomendamos el acabado que mejor aguanta el uso que le vas a dar.</p>
+    </header>
+
+    <div class="servicios">
+      {
+        principales.map((s) => (
+          <a class="servicio" href={`/servicios/${s.id}/`}>
+            {s.data.imagen && (
+              <div class="servicio-foto">
+                <Image src={imagen(s.data.imagen)} alt={s.data.titulo} widths={[420, 720]} sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 25vw" />
+              </div>
+            )}
+            <div class="servicio-texto">
+              <h3>{s.data.titulo}</h3>
+              <p>{s.data.resumen}</p>
+              <ul>
+                {s.data.idealPara.map((uso) => (
+                  <li>{uso}</li>
+                ))}
+              </ul>
+            </div>
+          </a>
+        ))
+      }
+    </div>
+
+    <div class="otros">
+      <p>También hacemos</p>
+      <ul>
+        {
+          otros.map((s) => (
+            <li>
+              <a href={`/servicios/${s.id}/`}>{s.data.titulo}</a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <section class="renovar">
+    <div class="wrap renovar-grid">
+      <div class="renovar-fotos">
+        <Image src={renovadoPatio} alt="Patio de hormigón impreso tras el lavado y resinado" widths={[480, 800]} sizes="(max-width: 900px) 50vw, 25vw" />
+        <Image src={renovadoPasillo} alt="Pasillo de hormigón impreso renovado con brillo" widths={[480, 800]} sizes="(max-width: 900px) 50vw, 25vw" />
+      </div>
+      <div class="renovar-texto">
+        <p class="eyebrow">¿Tu impreso ha perdido color?</p>
+        <h2>Lo dejamos como el primer día</h2>
+        <p>
+          Con los años el sellado se desgasta y el hormigón impreso pierde brillo y color. Lo lavamos a presión y le
+          aplicamos una nueva capa de resina para recuperar su aspecto y volver a protegerlo.
+        </p>
+        <a class="btn btn-light" href="/trabajos/lavado-y-resinado-de-impreso-antiguo/">Ver este trabajo</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="bloque wrap">
+    <header class="cabecera en-fila">
+      <div>
+        <p class="eyebrow">Trabajos recientes</p>
+        <h2>Obras que ya pisan nuestros clientes</h2>
+      </div>
+      <a class="link-arrow" href="/trabajos/">Ver todos los trabajos →</a>
+    </header>
+
+    <div class="mosaico">
+      {
+        trabajos.map((t, i) => (
+          <a class={`obra obra-${i}`} href={`/trabajos/${t.id}/`}>
+            <Image
+              src={imagen(t.data.portada)}
+              alt={t.data.titulo}
+              widths={i === 0 ? [640, 1100] : [420, 720]}
+              sizes={i === 0 ? '(max-width: 800px) 100vw, 50vw' : '(max-width: 800px) 100vw, 25vw'}
+            />
+            <div class="obra-info">
+              {t.data.localidad && <span class="obra-lugar">{t.data.localidad}</span>}
+              <h3>{t.data.titulo}</h3>
+              {t.data.detalles.length > 0 && <p>{t.data.detalles.join(' · ')}</p>}
+            </div>
+          </a>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="proceso">
+    <div class="wrap">
+      <header class="cabecera">
+        <p class="eyebrow">Cómo trabajamos</p>
+        <h2>Del primer contacto a la última capa de resina</h2>
+      </header>
+      <ol class="pasos">
+        <li>
+          <span>01</span>
+          <h3>Visita y asesoramiento</h3>
+          <p>Nuestro director técnico ve la obra y te recomienda el pavimento, el color y el molde que mejor encajan.</p>
+        </li>
+        <li>
+          <span>02</span>
+          <h3>Presupuesto sin compromiso</h3>
+          <p>Te preparamos un presupuesto detallado, gratis y sin ningún compromiso.</p>
+        </li>
+        <li>
+          <span>03</span>
+          <h3>Hormigonado e impresión</h3>
+          <p>Extendemos el hormigón, aplicamos el color y estampamos el molde mientras el hormigón está fresco.</p>
+        </li>
+        <li>
+          <span>04</span>
+          <h3>Juntas, lavado y sellado</h3>
+          <p>Cortamos las juntas de dilatación, lavamos la solera a presión y la sellamos con resina acrílica.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="bloque wrap cierre">
+    <div>
+      <p class="eyebrow">¿Hablamos?</p>
+      <h2>Cuéntanos tu obra y te damos presupuesto</h2>
+      <p>
+        Estamos en Pinseque, junto a Zaragoza. Llámanos, escríbenos por WhatsApp o déjanos tus datos y te respondemos
+        enseguida.
+      </p>
+      <div class="botones">
+        <a class="btn btn-primary" href="/contacto/#presupuesto">Pide presupuesto</a>
+        <a class="btn btn-outline" href={empresa.movil.href}>Llamar al {empresa.movil.texto}</a>
+      </div>
+    </div>
+    <div class="zonas">
+      <h3>Hemos pavimentado en</h3>
+      <ul>
+        {empresa.zonas.map((z) => <li>{z}</li>)}
+      </ul>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .bloque {
+    padding-block: clamp(4rem, 8vw, 6.5rem);
+  }
+  .cabecera {
+    display: grid;
+    gap: 0.9rem;
+    max-width: 44rem;
+    margin-bottom: clamp(2rem, 4vw, 3rem);
+  }
+  .cabecera h2 {
+    font-size: clamp(2.2rem, 4.5vw, 3.6rem);
+  }
+  .cabecera p:not(.eyebrow) {
+    font-size: 1.08rem;
+    color: var(--muted);
+  }
+  .en-fila {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1.5rem;
+    max-width: none;
+  }
+  .en-fila > div {
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  .confianza {
+    background: var(--ink);
+    color: #fff;
+  }
+  .confianza ul {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    margin-block: 0;
+    list-style: none;
+  }
+  .confianza li {
+    display: grid;
+    gap: 0.2rem;
+    padding: 1.6rem 1.25rem;
+    border-left: 1px solid var(--line-dark);
+  }
+  .confianza li:first-child {
+    border-left: 0;
+    padding-left: 0;
+  }
+  .confianza strong {
+    font-family: var(--font-display);
+    font-size: 1.7rem;
+    font-weight: 700;
+    line-height: 1;
+    text-transform: uppercase;
+    color: var(--sand);
+  }
+  .confianza span {
+    font-size: 0.92rem;
+    color: var(--muted-light);
+  }
+
+  .servicios {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
+  }
+  .servicio {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--white);
+    text-decoration: none;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .servicio:hover {
+    border-color: var(--ink);
+    transform: translateY(-3px);
+  }
+  .servicio-foto {
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+  }
+  .servicio-foto img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s;
+  }
+  .servicio:hover .servicio-foto img {
+    transform: scale(1.05);
+  }
+  .servicio-texto {
+    display: grid;
+    align-content: start;
+    gap: 0.75rem;
+    padding: 1.25rem;
+  }
+  .servicio h3 {
+    font-size: 1.7rem;
+  }
+  .servicio p {
+    font-size: 0.93rem;
+    color: var(--muted);
+  }
+  .servicio ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin: 0.25rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .servicio li {
+    padding: 0.2rem 0.55rem;
+    border-radius: 99px;
+    background: var(--paper-2);
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+  .otros {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.5rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--line);
+  }
+  .otros p {
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .otros ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .otros a {
+    display: inline-block;
+    padding: 0.45rem 0.9rem;
+    border: 1px solid var(--line);
+    border-radius: 99px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: none;
+  }
+  .otros a:hover {
+    border-color: var(--ink);
+  }
+
+  .renovar {
+    background: var(--ink-2);
+    color: #fff;
+  }
+  .renovar-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: clamp(2rem, 5vw, 4.5rem);
+    padding-block: clamp(4rem, 8vw, 6rem);
+  }
+  .renovar-fotos {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+  .renovar-fotos img {
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    border-radius: var(--radius);
+  }
+  .renovar-fotos img:last-child {
+    margin-top: 2.5rem;
+  }
+  .renovar-texto {
+    display: grid;
+    justify-items: start;
+    gap: 1.1rem;
+  }
+  .renovar-texto .eyebrow {
+    color: var(--sand);
+  }
+  .renovar-texto h2 {
+    font-size: clamp(2.2rem, 4.5vw, 3.6rem);
+  }
+  .renovar-texto p:not(.eyebrow) {
+    max-width: 46ch;
+    font-size: 1.08rem;
+    color: var(--muted-light);
+  }
+
+  .mosaico {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-auto-rows: clamp(220px, 22vw, 290px);
+    gap: 1rem;
+  }
+  .obra {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius);
+    color: #fff;
+    text-decoration: none;
+  }
+  .obra-0 {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+  .obra-1 {
+    grid-column: span 2;
+  }
+  .obra img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s;
+  }
+  .obra:hover img {
+    transform: scale(1.04);
+  }
+  .obra::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(transparent 45%, rgba(20, 18, 15, 0.85));
+  }
+  .obra-info {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+    display: grid;
+    gap: 0.35rem;
+    padding: 1.25rem;
+  }
+  .obra-lugar {
+    justify-self: start;
+    padding: 0.15rem 0.55rem;
+    background: var(--terra);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .obra h3 {
+    font-size: clamp(1.35rem, 2vw, 1.8rem);
+  }
+  .obra-0 h3 {
+    font-size: clamp(1.8rem, 3vw, 2.6rem);
+  }
+  .obra p {
+    font-size: 0.85rem;
+    color: #e6dfd3;
+  }
+
+  .proceso {
+    background: var(--paper-2);
+    padding-block: clamp(4rem, 8vw, 6.5rem);
+  }
+  .pasos {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .pasos li {
+    display: grid;
+    align-content: start;
+    gap: 0.7rem;
+    padding-top: 1.25rem;
+    border-top: 3px solid var(--ink);
+  }
+  .pasos span {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--terra);
+  }
+  .pasos h3 {
+    font-size: 1.6rem;
+  }
+  .pasos p {
+    color: var(--muted);
+  }
+
+  .cierre {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: clamp(2rem, 5vw, 4.5rem);
+    align-items: start;
+  }
+  .cierre > div:first-child {
+    display: grid;
+    justify-items: start;
+    gap: 1.1rem;
+  }
+  .cierre h2 {
+    font-size: clamp(2.2rem, 4.5vw, 3.6rem);
+  }
+  .cierre p:not(.eyebrow) {
+    max-width: 46ch;
+    font-size: 1.08rem;
+    color: var(--muted);
+  }
+  .botones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+  }
+  .zonas {
+    padding: 1.75rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--white);
+  }
+  .zonas h3 {
+    margin-bottom: 1rem;
+    font-size: 1.4rem;
+  }
+  .zonas ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .zonas li {
+    padding: 0.3rem 0.7rem;
+    border-radius: 99px;
+    background: var(--paper);
+    font-size: 0.88rem;
+  }
+
+  @media (max-width: 1100px) {
+    .servicios {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .confianza ul {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .confianza li:nth-child(odd) {
+      border-left: 0;
+      padding-left: 0;
+    }
+    .pasos {
+      grid-template-columns: repeat(2, 1fr);
+      row-gap: 2rem;
+    }
+  }
+  @media (max-width: 800px) {
+    .renovar-grid,
+    .cierre {
+      grid-template-columns: 1fr;
+    }
+    .mosaico {
+      grid-template-columns: 1fr;
+      grid-auto-rows: 260px;
+    }
+    .obra-0,
+    .obra-1 {
+      grid-column: auto;
+      grid-row: auto;
+    }
+  }
+  @media (max-width: 560px) {
+    .servicios,
+    .pasos {
+      grid-template-columns: 1fr;
+    }
+    .confianza li {
+      padding: 1.1rem 0.75rem;
+    }
+    .confianza strong {
+      font-size: 1.35rem;
+    }
+  }
+</style>

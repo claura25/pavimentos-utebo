@@ -1,0 +1,152 @@
+---
+import Logo from './Logo.astro';
+import { empresa, navegacion } from '../data/empresa';
+
+const d = empresa.direccion;
+const anio = new Date().getFullYear();
+---
+
+<footer class="footer">
+  <div class="wrap grid">
+    <div class="brand">
+      <Logo tone="light" />
+      <p>
+        Soleras y pavimentos de hormigón en Zaragoza desde hace más de 20 años. Director técnico y equipo propio en
+        cada obra.
+      </p>
+      <a class="insta" href={empresa.instagram} target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" aria-hidden="true"
+          ><path
+            fill="currentColor"
+            d="M12 2.2c3.2 0 3.6 0 4.8.1 1.2.1 1.8.2 2.2.4.6.2 1 .5 1.4.9.4.4.7.8.9 1.4.2.4.4 1 .4 2.2.1 1.3.1 1.6.1 4.8s0 3.6-.1 4.8c-.1 1.2-.2 1.8-.4 2.2-.2.6-.5 1-.9 1.4-.4.4-.8.7-1.4.9-.4.2-1 .4-2.2.4-1.3.1-1.6.1-4.8.1s-3.6 0-4.8-.1c-1.2-.1-1.8-.2-2.2-.4-.6-.2-1-.5-1.4-.9-.4-.4-.7-.8-.9-1.4-.2-.4-.4-1-.4-2.2-.1-1.3-.1-1.6-.1-4.8s0-3.6.1-4.8c.1-1.2.2-1.8.4-2.2.2-.6.5-1 .9-1.4.4-.4.8-.7 1.4-.9.4-.2 1-.4 2.2-.4 1.2-.1 1.6-.1 4.8-.1zm0 4.9a4.9 4.9 0 1 0 0 9.8 4.9 4.9 0 0 0 0-9.8zm0 8.1a3.2 3.2 0 1 1 0-6.4 3.2 3.2 0 0 1 0 6.4zm5.1-9.4a1.1 1.1 0 1 0 0 2.3 1.1 1.1 0 0 0 0-2.3z"
+          ></path></svg
+        >
+        @pavimentosutebo
+      </a>
+    </div>
+
+    <nav aria-label="Pie de página">
+      <h2>La empresa</h2>
+      <ul>
+        {
+          navegacion.map((item) => (
+            <li>
+              <a href={item.href}>{item.texto}</a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div>
+      <h2>Contacto</h2>
+      <ul>
+        <li><a href={empresa.oficina.href}>Oficina · {empresa.oficina.texto}</a></li>
+        <li><a href={empresa.movil.href}>{empresa.movil.contacto} · {empresa.movil.texto}</a></li>
+        <li><a href={`mailto:${empresa.email}`}>{empresa.email}</a></li>
+      </ul>
+    </div>
+
+    <div>
+      <h2>Dónde estamos</h2>
+      <address>
+        <a href={empresa.mapa} target="_blank" rel="noopener">
+          {d.calle}<br />{d.cp} {d.localidad}, {d.provincia}
+        </a>
+      </address>
+    </div>
+  </div>
+
+  <div class="wrap legal">
+    <p>© {anio} {empresa.razonSocial}</p>
+    <ul>
+      <li><a href="/aviso-legal/">Aviso legal</a></li>
+      <li><a href="/politica-de-privacidad/">Privacidad</a></li>
+      <li><a href="/politica-de-cookies/">Cookies</a></li>
+    </ul>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    background: var(--nogal);
+    color: rgba(255, 255, 255, 0.8);
+    padding-top: clamp(3.5rem, 7vw, 5.5rem);
+    font-size: 0.95rem;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr 1.2fr 1.2fr;
+    gap: 2.5rem;
+    padding-bottom: 3.5rem;
+  }
+  .brand p {
+    max-width: 34ch;
+    margin-block: 1.25rem;
+  }
+  h2 {
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: #fff;
+  }
+  ul {
+    display: grid;
+    gap: 0.55rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  a {
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  a:hover {
+    color: #fff;
+  }
+  address {
+    font-style: normal;
+  }
+  .insta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #fff;
+  }
+  .insta svg {
+    width: 20px;
+    height: 20px;
+  }
+  .legal {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-block: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.22);
+    font-size: 0.85rem;
+  }
+  .legal ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+  }
+
+  @media (max-width: 900px) {
+    .grid {
+      grid-template-columns: 1fr 1fr;
+    }
+    .brand {
+      grid-column: 1 / -1;
+    }
+  }
+  @media (max-width: 560px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+    .footer {
+      padding-bottom: 72px;
+    }
+  }
+</style>

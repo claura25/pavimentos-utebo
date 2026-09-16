@@ -1,0 +1,148 @@
+---
+import { Image } from 'astro:assets';
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import LlamadaFinal from '../../components/LlamadaFinal.astro';
+import { imagen } from '../../data/imagenes';
+
+const servicios = (await getCollection('servicios')).sort((a, b) => a.data.orden - b.data.orden);
+---
+
+<Layout
+  title="Servicios · Pavimentos de hormigón en Zaragoza | Pavimentos Utebo"
+  description="Hormigón impreso, pulido e industrial, lavado, fratasado, resinas epoxi, poliuretano, morteros autonivelantes y microcemento en Zaragoza y alrededores."
+>
+  <header class="hero-pagina wrap">
+    <ul class="migas">
+      <li><a href="/">Inicio</a></li>
+      <li>/</li>
+      <li>Servicios</li>
+    </ul>
+    <p class="eyebrow">Qué hacemos</p>
+    <h1>Pavimentos de hormigón para cada uso</h1>
+    <p class="entradilla">
+      Llevamos más de 20 años ejecutando soleras de hormigón en Zaragoza y alrededores. Elige el acabado que buscas y
+      te contamos cómo se hace, para qué sirve y cuánto aguanta.
+    </p>
+  </header>
+
+  <section class="wrap lista">
+    {
+      servicios.map((s, i) => (
+        <article class="servicio">
+          <div class="servicio-texto">
+            <p class="numero">{String(i + 1).padStart(2, '0')}</p>
+            <h2>{s.data.titulo}</h2>
+            <p class="resumen">{s.data.resumen}</p>
+            {s.data.idealPara.length > 0 && (
+              <ul class="usos">
+                {s.data.idealPara.map((uso) => (
+                  <li>{uso}</li>
+                ))}
+              </ul>
+            )}
+            <a class="link-arrow" href={`/servicios/${s.id}/`}>
+              Ver {s.data.titulo.toLowerCase()} →
+            </a>
+          </div>
+          <a class="servicio-foto" href={`/servicios/${s.id}/`} aria-label={s.data.titulo}>
+            {s.data.imagen ? (
+              <Image src={imagen(s.data.imagen)} alt={s.data.titulo} widths={[480, 900]} sizes="(max-width: 800px) 100vw, 45vw" />
+            ) : (
+              <span class="sin-foto">Pavimentos Utebo</span>
+            )}
+          </a>
+        </article>
+      ))
+    }
+  </section>
+
+  <LlamadaFinal texto="¿No sabes qué acabado te conviene? Nuestro director técnico visita la obra y te lo dice sin compromiso." />
+</Layout>
+
+<style>
+  .lista {
+    display: grid;
+    gap: clamp(2.5rem, 5vw, 4rem);
+    padding-bottom: clamp(3.5rem, 7vw, 5.5rem);
+  }
+  .servicio {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: clamp(1.5rem, 4vw, 3.5rem);
+    padding-top: clamp(2rem, 4vw, 3rem);
+    border-top: 1px solid var(--line);
+  }
+  .servicio:nth-child(even) .servicio-foto {
+    order: -1;
+  }
+  .servicio-texto {
+    display: grid;
+    justify-items: start;
+    gap: 0.9rem;
+  }
+  .numero {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--terra);
+  }
+  h2 {
+    font-size: clamp(2rem, 4vw, 3rem);
+  }
+  .resumen {
+    max-width: 50ch;
+    font-size: 1.05rem;
+    color: var(--muted);
+  }
+  .usos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .usos li {
+    padding: 0.25rem 0.65rem;
+    border-radius: 99px;
+    background: var(--paper-2);
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+  .servicio-foto {
+    display: block;
+    overflow: hidden;
+    border-radius: var(--radius);
+    aspect-ratio: 4 / 3;
+    background: var(--paper-2);
+  }
+  .servicio-foto img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s;
+  }
+  .servicio-foto:hover img {
+    transform: scale(1.04);
+  }
+  .sin-foto {
+    display: grid;
+    place-content: center;
+    height: 100%;
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    text-transform: uppercase;
+    color: var(--muted-light);
+  }
+
+  @media (max-width: 800px) {
+    .servicio {
+      grid-template-columns: 1fr;
+    }
+    .servicio:nth-child(even) .servicio-foto {
+      order: 0;
+    }
+  }
+</style>

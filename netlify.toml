@@ -1,0 +1,52 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# Direcciones de la web antigua en WordPress
+[[redirects]]
+  from = "/trabajos-realizados/*"
+  to = "/trabajos/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/colores/*"
+  to = "/moldes-y-colores/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/moldes/*"
+  to = "/moldes-y-colores/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/glosario/*"
+  to = "/servicios/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/mapa-web/*"
+  to = "/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/mas-informacion-sobre-las-cookies/*"
+  to = "/politica-de-cookies/"
+  status = 301
+  force = true
+
+# Las entradas antiguas de obras quedan recogidas por el listado de trabajos
+[[redirects]]
+  from = "/category/*"
+  to = "/trabajos/"
+  status = 301
+  force = true
+
+[[headers]]
+  for = "/admin/*"
+  [headers.values]
+    X-Robots-Tag = "noindex"

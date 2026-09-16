@@ -1,0 +1,190 @@
+---
+import { Image } from 'astro:assets';
+import { getCollection, render } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import LlamadaFinal from '../../components/LlamadaFinal.astro';
+import { imagen } from '../../data/imagenes';
+import TarjetaObra from '../../components/TarjetaObra.astro';
+
+export async function getStaticPaths() {
+  const servicios = await getCollection('servicios');
+  return servicios.map((servicio) => ({ params: { id: servicio.id }, props: { servicio } }));
+}
+
+const { servicio } = Astro.props;
+const { Content } = await render(servicio);
+
+const servicios = (await getCollection('servicios')).sort((a, b) => a.data.orden - b.data.orden);
+const otros = servicios.filter((s) => s.id !== servicio.id).slice(0, 4);
+const obras = (await getCollection('trabajos'))
+  .filter((t) => t.data.servicio === servicio.id)
+  .sort((a, b) => b.data.fecha.valueOf() - a.data.fecha.valueOf())
+  .slice(0, 3);
+---
+
+<Layout
+  title={`${servicio.data.titulo} en Zaragoza | Pavimentos Utebo`}
+  description={servicio.data.resumen}
+>
+  <header class="hero-pagina wrap">
+    <ul class="migas">
+      <li><a href="/">Inicio</a></li>
+      <li>/</li>
+      <li><a href="/servicios/">Servicios</a></li>
+      <li>/</li>
+      <li>{servicio.data.titulo}</li>
+    </ul>
+    <h1>{servicio.data.titulo}</h1>
+    <p class="entradilla">{servicio.data.resumen}</p>
+  </header>
+
+  {
+    servicio.data.imagen && (
+      <div class="wrap portada">
+        <Image
+          src={imagen(servicio.data.imagen)}
+          alt={servicio.data.titulo}
+          widths={[720, 1240]}
+          sizes="(max-width: 1240px) 100vw, 1240px"
+          loading="eager"
+        />
+      </div>
+    )
+  }
+
+  <div class="wrap cuerpo">
+    <div class="prosa">
+      <Content />
+    </div>
+
+    <aside class="ficha">
+      {
+        servicio.data.idealPara.length > 0 && (
+          <div>
+            <h2>Ideal para</h2>
+            <ul>
+              {servicio.data.idealPara.map((uso) => (
+                <li>{uso}</li>
+              ))}
+            </ul>
+          </div>
+        )
+      }
+      <div>
+        <h2>Otros acabados</h2>
+        <ul class="enlaces">
+          {
+            otros.map((s) => (
+              <li>
+                <a href={`/servicios/${s.id}/`}>{s.data.titulo}</a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+      <a class="btn btn-primary" href="/contacto/#presupuesto">Pide presupuesto</a>
+    </aside>
+  </div>
+
+  {
+    obras.length > 0 && (
+      <section class="wrap obras">
+        <header class="cabecera">
+          <p class="eyebrow">Trabajos</p>
+          <h2>Obras con este acabado</h2>
+        </header>
+        <div class="rejilla">
+          {obras.map((t) => (
+            <TarjetaObra trabajo={t} />
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  <LlamadaFinal titulo={`¿Quieres ${servicio.data.titulo.toLowerCase()} en tu obra?`} />
+</Layout>
+
+<style>
+  .portada {
+    margin-bottom: clamp(2rem, 4vw, 3rem);
+  }
+  .portada img {
+    width: 100%;
+    max-height: 60vh;
+    object-fit: cover;
+    border-radius: var(--radius);
+  }
+  .cuerpo {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    align-items: start;
+    gap: clamp(2rem, 5vw, 4rem);
+    padding-bottom: clamp(3rem, 6vw, 5rem);
+  }
+  .ficha {
+    display: grid;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--white);
+  }
+  .ficha h2 {
+    margin-bottom: 0.75rem;
+    font-size: 1.3rem;
+  }
+  .ficha ul {
+    display: grid;
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.95rem;
+  }
+  .ficha li {
+    padding-left: 1rem;
+    position: relative;
+  }
+  .ficha li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.65em;
+    width: 6px;
+    height: 6px;
+    background: var(--terra);
+  }
+  .enlaces a {
+    text-decoration: none;
+  }
+  .enlaces a:hover {
+    color: var(--terra);
+  }
+  .obras {
+    padding-bottom: clamp(3rem, 6vw, 5rem);
+  }
+  .cabecera {
+    display: grid;
+    gap: 0.75rem;
+    margin-bottom: 1.75rem;
+  }
+  .cabecera h2 {
+    font-size: clamp(1.9rem, 3.5vw, 2.6rem);
+  }
+  .rejilla {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: clamp(220px, 20vw, 280px);
+    gap: 1rem;
+  }
+
+  @media (max-width: 900px) {
+    .cuerpo {
+      grid-template-columns: 1fr;
+    }
+    .rejilla {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

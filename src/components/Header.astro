@@ -1,0 +1,251 @@
+---
+import Logo from './Logo.astro';
+import { empresa, navegacion } from '../data/empresa';
+
+const actual = Astro.url.pathname;
+---
+
+<header class="header" data-header>
+  <div class="wrap bar">
+    <Logo />
+
+    <nav class="nav" id="menu" aria-label="Principal">
+      <ul>
+        {
+          navegacion.map((item) => (
+            <li>
+              <a href={item.href} aria-current={actual.startsWith(item.href) ? 'page' : undefined}>
+                {item.texto}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <a class="btn btn-primary nav-cta" href="/contacto/#presupuesto">Pide presupuesto</a>
+    </nav>
+
+    <div class="actions">
+      <a class="phone" href={empresa.movil.href}>
+        <svg viewBox="0 0 24 24" aria-hidden="true"
+          ><path
+            fill="currentColor"
+            d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z"
+          ></path></svg
+        >
+        <span><small>Llámanos</small>{empresa.movil.texto}</span>
+      </a>
+      <a class="btn btn-primary desktop-cta" href="/contacto/#presupuesto">Pide presupuesto</a>
+      <button class="toggle" type="button" aria-controls="menu" aria-expanded="false" data-toggle>
+        <span class="sr-only">Abrir menú</span>
+        <span class="bars" aria-hidden="true"></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<script>
+  const header = document.querySelector<HTMLElement>('[data-header]');
+  const toggle = document.querySelector<HTMLButtonElement>('[data-toggle]');
+  toggle?.addEventListener('click', () => {
+    const abierto = toggle.getAttribute('aria-expanded') === 'true';
+    toggle.setAttribute('aria-expanded', String(!abierto));
+    header?.toggleAttribute('data-open', !abierto);
+    document.body.style.overflow = abierto ? '' : 'hidden';
+  });
+  const marcarScroll = () => header?.toggleAttribute('data-scrolled', window.scrollY > 8);
+  marcarScroll();
+  window.addEventListener('scroll', marcarScroll, { passive: true });
+</script>
+
+<style>
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(244, 241, 236, 0.92);
+    backdrop-filter: saturate(1.4) blur(10px);
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s;
+  }
+  .header[data-scrolled] {
+    border-bottom-color: var(--line);
+  }
+  .bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    height: var(--header-h);
+  }
+  .nav ul {
+    display: flex;
+    gap: 2rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .nav a:not(.btn) {
+    position: relative;
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-decoration: none;
+    white-space: nowrap;
+    padding-block: 0.5rem;
+  }
+  .nav a:not(.btn)::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    background: var(--terra);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.25s;
+  }
+  .nav a:not(.btn):hover::after,
+  .nav a[aria-current='page']::after {
+    transform: scaleX(1);
+  }
+  .nav-cta {
+    display: none;
+  }
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+  }
+  .phone {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    text-decoration: none;
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+  .phone svg {
+    width: 36px;
+    height: 36px;
+    padding: 8px;
+    border-radius: 50%;
+    background: var(--paper-2);
+    color: var(--terra);
+  }
+  .phone span {
+    display: flex;
+    flex-direction: column;
+    line-height: 1;
+  }
+  .phone small {
+    font-family: var(--font-body);
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 3px;
+  }
+  .desktop-cta {
+    min-height: 46px;
+    font-size: 1.05rem;
+  }
+  .toggle {
+    display: none;
+    width: 46px;
+    height: 46px;
+    padding: 0;
+    border: 0;
+    background: var(--ink);
+    border-radius: var(--radius);
+    cursor: pointer;
+  }
+  .bars,
+  .bars::before,
+  .bars::after {
+    display: block;
+    width: 20px;
+    height: 2px;
+    margin-inline: auto;
+    background: #fff;
+    transition: transform 0.25s, opacity 0.25s;
+  }
+  .bars {
+    position: relative;
+  }
+  .bars::before,
+  .bars::after {
+    content: '';
+    position: absolute;
+    left: 0;
+  }
+  .bars::before {
+    top: -6px;
+  }
+  .bars::after {
+    top: 6px;
+  }
+  [data-open] .bars {
+    background: transparent;
+  }
+  [data-open] .bars::before {
+    transform: translateY(6px) rotate(45deg);
+  }
+  [data-open] .bars::after {
+    transform: translateY(-6px) rotate(-45deg);
+  }
+
+  @media (max-width: 1100px) {
+    .phone {
+      display: none;
+    }
+  }
+
+  @media (max-width: 1080px) {
+    .toggle {
+      display: block;
+    }
+    .desktop-cta {
+      display: none;
+    }
+    .nav {
+      position: fixed;
+      inset: var(--header-h) 0 0 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      padding: 2rem var(--gutter);
+      background: var(--paper);
+      transform: translateX(100%);
+      visibility: hidden;
+      transition: transform 0.3s, visibility 0.3s;
+    }
+    [data-open] .nav {
+      transform: none;
+      visibility: visible;
+    }
+    .nav ul {
+      flex-direction: column;
+      gap: 0;
+    }
+    .nav li {
+      border-bottom: 1px solid var(--line);
+    }
+    .nav a:not(.btn) {
+      display: block;
+      padding-block: 1rem;
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .nav a:not(.btn)::after {
+      display: none;
+    }
+    .nav-cta {
+      display: inline-flex;
+    }
+  }
+</style>

@@ -1,0 +1,336 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../layouts/Layout.astro';
+import { empresa } from '../data/empresa';
+
+const servicios = (await getCollection('servicios')).sort((a, b) => a.data.orden - b.data.orden);
+const d = empresa.direccion;
+---
+
+<Layout
+  title="Contacto y presupuesto · Pavimentos Utebo"
+  description="Pídenos presupuesto sin compromiso para tu pavimento de hormigón. Estamos en Pinseque (Zaragoza). Teléfono 976 617 099 y 626 226 174."
+>
+  <header class="hero-pagina wrap">
+    <ul class="migas">
+      <li><a href="/">Inicio</a></li>
+      <li>/</li>
+      <li>Contacto</li>
+    </ul>
+    <p class="eyebrow">Hablemos</p>
+    <h1>Pide presupuesto sin compromiso</h1>
+    <p class="entradilla">
+      Cuéntanos qué quieres pavimentar y te respondemos con un presupuesto. Si prefieres, llámanos o escríbenos por
+      WhatsApp: muchas veces con una foto y los metros cuadrados ya podemos orientarte.
+    </p>
+  </header>
+
+  <section class="wrap contenido">
+    <form
+      id="presupuesto"
+      name="presupuesto"
+      method="POST"
+      data-netlify="true"
+      netlify-honeypot="empresa"
+      data-formulario
+      novalidate
+    >
+      <h2>Formulario de presupuesto</h2>
+      <input type="hidden" name="form-name" value="presupuesto" />
+      <p class="trampa">
+        <label>No rellenes este campo: <input name="empresa" tabindex="-1" autocomplete="off" /></label>
+      </p>
+
+      <div class="campos">
+        <p class="campo">
+          <label for="nombre">Nombre y apellidos *</label>
+          <input id="nombre" name="nombre" type="text" autocomplete="name" required />
+        </p>
+        <p class="campo">
+          <label for="telefono">Teléfono *</label>
+          <input id="telefono" name="telefono" type="tel" autocomplete="tel" required />
+        </p>
+        <p class="campo">
+          <label for="email">Correo electrónico</label>
+          <input id="email" name="email" type="email" autocomplete="email" />
+        </p>
+        <p class="campo">
+          <label for="localidad">Localidad de la obra</label>
+          <input id="localidad" name="localidad" type="text" />
+        </p>
+        <p class="campo">
+          <label for="tipo">Tipo de pavimento</label>
+          <select id="tipo" name="tipo">
+            <option value="">No lo tengo claro, asesoradme</option>
+            {servicios.map((s) => <option value={s.data.titulo}>{s.data.titulo}</option>)}
+          </select>
+        </p>
+        <p class="campo">
+          <label for="metros">Metros cuadrados aproximados</label>
+          <input id="metros" name="metros" type="text" inputmode="numeric" />
+        </p>
+      </div>
+
+      <p class="campo">
+        <label for="mensaje">Cuéntanos la obra *</label>
+        <textarea id="mensaje" name="mensaje" rows="6" required></textarea>
+      </p>
+
+      <p class="acepto">
+        <input id="privacidad" name="privacidad" type="checkbox" required />
+        <label for="privacidad">
+          He leído y acepto la <a href="/politica-de-privacidad/">política de privacidad</a> y que uséis mis datos para
+          responderme. *
+        </label>
+      </p>
+
+      <button class="btn btn-primary" type="submit">Enviar solicitud</button>
+      <p class="aviso" data-aviso role="status"></p>
+    </form>
+
+    <aside class="datos">
+      <div class="tarjeta">
+        <h2>Contacto directo</h2>
+        <ul>
+          <li>
+            <span>Oficinas</span>
+            <a href={empresa.oficina.href}>{empresa.oficina.texto}</a>
+          </li>
+          <li>
+            <span>{empresa.movil.contacto}</span>
+            <a href={empresa.movil.href}>{empresa.movil.texto}</a>
+          </li>
+          <li>
+            <span>Correo</span>
+            <a href={`mailto:${empresa.email}`}>{empresa.email}</a>
+          </li>
+        </ul>
+        <a class="btn btn-outline" href={empresa.whatsapp} target="_blank" rel="noopener">Escribir por WhatsApp</a>
+      </div>
+
+      <div class="tarjeta">
+        <h2>Dónde estamos</h2>
+        <address>
+          {empresa.razonSocial}<br />
+          {d.calle}<br />
+          {d.cp} {d.localidad}, {d.provincia}
+        </address>
+        <a class="link-arrow" href={empresa.mapa} target="_blank" rel="noopener">Ver en el mapa →</a>
+      </div>
+
+      <div class="tarjeta">
+        <h2>Redes</h2>
+        <p>Publicamos nuestras obras en Instagram y Facebook.</p>
+        <a class="link-arrow" href={empresa.instagram} target="_blank" rel="noopener">@pavimentosutebo →</a>
+      </div>
+    </aside>
+  </section>
+</Layout>
+
+<script>
+  import { empresa } from '../data/empresa';
+
+  const formulario = document.querySelector<HTMLFormElement>('[data-formulario]');
+  const aviso = document.querySelector<HTMLElement>('[data-aviso]');
+  const mensaje = document.querySelector<HTMLTextAreaElement>('#mensaje');
+
+  // Si vienes del simulador, el mensaje ya trae la combinación elegida
+  const params = new URLSearchParams(location.search);
+  const molde = params.get('molde');
+  const color = params.get('color');
+  const desmoldeante = params.get('desmoldeante');
+  if (mensaje && (molde || color)) {
+    const partes = [molde && `molde ${molde}`, color && `color ${color}`, desmoldeante && `desmoldeante ${desmoldeante}`]
+      .filter(Boolean)
+      .join(', ');
+    mensaje.value = `Hola, me interesa un pavimento de hormigón impreso con ${partes}.\n\nLa obra es: `;
+    const tipo = document.querySelector<HTMLSelectElement>('#tipo');
+    const impreso = [...(tipo?.options ?? [])].find((o) => o.value === 'Hormigón impreso');
+    if (tipo && impreso) tipo.value = impreso.value;
+  }
+
+  formulario?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!formulario.reportValidity() || !aviso) return;
+    const datos = new FormData(formulario);
+    const texto = [
+      `Nombre: ${datos.get('nombre')}`,
+      `Teléfono: ${datos.get('telefono')}`,
+      `Correo: ${datos.get('email') || '-'}`,
+      `Localidad: ${datos.get('localidad') || '-'}`,
+      `Tipo de pavimento: ${datos.get('tipo') || 'Por decidir'}`,
+      `Metros cuadrados: ${datos.get('metros') || '-'}`,
+      '',
+      String(datos.get('mensaje') ?? ''),
+    ].join('\n');
+
+    if (empresa.formulario) {
+      try {
+        const cuerpo = new URLSearchParams();
+        datos.forEach((valor, clave) => cuerpo.append(clave, String(valor)));
+        if (!cuerpo.has('form-name')) cuerpo.append('form-name', 'presupuesto');
+        const respuesta = await fetch(empresa.formulario, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: cuerpo,
+        });
+        if (!respuesta.ok) throw new Error(String(respuesta.status));
+        formulario.reset();
+        aviso.textContent = 'Solicitud enviada. Te responderemos lo antes posible.';
+        return;
+      } catch {
+        aviso.textContent = 'No hemos podido enviar la solicitud. Abrimos tu correo con los datos para que nos la envíes.';
+      }
+    }
+
+    const asunto = `Solicitud de presupuesto de ${datos.get('nombre')}`;
+    location.href = `mailto:${empresa.email}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(texto)}`;
+    if (!empresa.formulario) {
+      aviso.textContent = 'Se abrirá tu programa de correo con la solicitud escrita. Si no se abre, escríbenos a ' + empresa.email;
+    }
+  });
+</script>
+
+<style>
+  .contenido {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    align-items: start;
+    gap: clamp(2rem, 4vw, 3rem);
+    padding-bottom: clamp(3.5rem, 7vw, 5.5rem);
+  }
+  form {
+    display: grid;
+    gap: 1.25rem;
+    padding: clamp(1.25rem, 3vw, 2rem);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--white);
+  }
+  form h2 {
+    font-size: 1.6rem;
+  }
+  .campos {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  .campo {
+    display: grid;
+    gap: 0.35rem;
+  }
+  label {
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  input,
+  select,
+  textarea {
+    width: 100%;
+    padding: 0.7rem 0.8rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--paper);
+    font: inherit;
+    color: inherit;
+  }
+  input:focus,
+  select:focus,
+  textarea:focus {
+    outline: 2px solid var(--terra);
+    outline-offset: 1px;
+  }
+  textarea {
+    resize: vertical;
+  }
+  .acepto {
+    display: flex;
+    align-items: start;
+    gap: 0.6rem;
+    font-size: 0.88rem;
+  }
+  .acepto input {
+    width: 18px;
+    height: 18px;
+    margin-top: 2px;
+  }
+  .acepto a {
+    color: var(--terra);
+  }
+  .trampa {
+    display: none;
+  }
+  .aviso:empty {
+    display: none;
+  }
+  .aviso {
+    padding: 0.75rem 1rem;
+    border-left: 3px solid var(--terra);
+    background: var(--paper-2);
+    font-size: 0.92rem;
+  }
+
+  .datos {
+    display: grid;
+    gap: 1rem;
+  }
+  .tarjeta {
+    display: grid;
+    justify-items: start;
+    gap: 0.9rem;
+    padding: 1.5rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--white);
+  }
+  .tarjeta h2 {
+    font-size: 1.35rem;
+  }
+  .tarjeta ul {
+    display: grid;
+    gap: 0.75rem;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .tarjeta li {
+    display: grid;
+    gap: 0.1rem;
+  }
+  .tarjeta li span {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .tarjeta li a {
+    font-family: var(--font-display);
+    font-size: 1.45rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .tarjeta li a:hover {
+    color: var(--terra);
+  }
+  address {
+    font-style: normal;
+    line-height: 1.7;
+  }
+  .tarjeta p {
+    font-size: 0.95rem;
+    color: var(--muted);
+  }
+
+  @media (max-width: 900px) {
+    .contenido {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 560px) {
+    .campos {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -1,0 +1,250 @@
+---
+import Layout from '../layouts/Layout.astro';
+import LlamadaFinal from '../components/LlamadaFinal.astro';
+import { colores, desmoldeantes, inicial, moldes } from '../simulador/catalogo';
+
+const colorInicial = colores.find((c) => c.codigo === inicial.color)!;
+---
+
+<Layout
+  title="Moldes y colores de hormigón impreso | Pavimentos Utebo"
+  description="Carta de colores y catálogo de moldes de hormigón impreso: adoquines, piedras, maderas, cenefas y paneles. Mira cada molde en el color que quieras."
+>
+  <header class="hero-pagina wrap">
+    <ul class="migas">
+      <li><a href="/">Inicio</a></li>
+      <li>/</li>
+      <li>Moldes y colores</li>
+    </ul>
+    <p class="eyebrow">Catálogo</p>
+    <h1>Moldes y colores</h1>
+    <p class="entradilla">
+      El color se aplica sobre el hormigón fresco y el dibujo se estampa con moldes antes de que fragüe. Elige un color
+      de la carta y verás todos los moldes con ese tono.
+    </p>
+    <a class="btn btn-primary" href="/#simulador">Verlo en una calle real</a>
+  </header>
+
+  <section class="wrap bloque" id="colores">
+    <header class="cabecera">
+      <h2>Carta de colores</h2>
+      <p>Veinte tonos de endurecedor. El resultado final varía según el hormigón, el desmoldeante y la luz del día.</p>
+    </header>
+    <div class="carta" data-carta>
+      {
+        colores.map((c) => (
+          <button
+            type="button"
+            class="tono"
+            data-color={c.codigo}
+            aria-pressed={c.codigo === inicial.color ? 'true' : 'false'}
+          >
+            <span class="muestra" style={`--c:${c.hex}`} />
+            <span class="nombre">{c.nombre}</span>
+            <span class="codigo">{c.codigo}</span>
+          </button>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="wrap bloque" id="moldes">
+    <header class="cabecera">
+      <h2>Moldes</h2>
+      <p>
+        Vista en <strong data-color-activo>{colorInicial.nombre} {colorInicial.codigo}</strong>. Pulsa un color de la
+        carta para cambiarla.
+      </p>
+    </header>
+    <div class="moldes">
+      {
+        moldes.map((m) => (
+          <article class="molde">
+            <canvas width="420" height="420" data-miniatura={m.id} aria-label={`Molde ${m.nombre}`} role="img" />
+            <h3>{m.nombre}</h3>
+            <p>
+              {m.codigo} · {m.medida}
+            </p>
+          </article>
+        ))
+      }
+    </div>
+    <p class="nota">
+      Las imágenes son recreaciones de cada molde, no fotografías. Si buscas un dibujo que no aparece aquí,
+      pregúntanos: trabajamos con más moldes y cenefas.
+    </p>
+  </section>
+
+  <section class="wrap bloque" id="desmoldeantes">
+    <header class="cabecera">
+      <h2>Desmoldeante</h2>
+      <p>
+        Es el polvo de color que se echa antes de estampar. Evita que el molde se pegue y queda en las juntas y los
+        poros, dando el efecto envejecido.
+      </p>
+    </header>
+    <ul class="desmoldeantes">
+      {
+        desmoldeantes
+          .filter((d) => d.hex)
+          .map((d) => (
+            <li>
+              <span style={`--c:${d.hex}`} />
+              {d.nombre}
+            </li>
+          ))
+      }
+    </ul>
+  </section>
+
+  <LlamadaFinal titulo="¿Ya sabes qué color y molde quieres?" texto="Dinos la combinación que te gusta y te pasamos presupuesto para tu obra." />
+</Layout>
+
+<script>
+  import { colores, inicial, moldes } from '../simulador/catalogo';
+  import { hexARgb, miniatura } from '../simulador/texturas';
+
+  const lienzos = [...document.querySelectorAll<HTMLCanvasElement>('[data-miniatura]')];
+  const botones = [...document.querySelectorAll<HTMLButtonElement>('[data-color]')];
+  const etiqueta = document.querySelector<HTMLElement>('[data-color-activo]');
+  const porId = new Map(moldes.map((m) => [m.id, m]));
+  let elegido = inicial.color;
+
+  function pintar(codigo: string) {
+    const color = colores.find((c) => c.codigo === codigo);
+    if (!color) return;
+    const rgb = hexARgb(color.hex);
+    lienzos.forEach((lienzo) => {
+      const def = porId.get(lienzo.dataset.miniatura!)!.def;
+      const px = miniatura(def, rgb, null, lienzo.width, 2);
+      lienzo.getContext('2d')!.putImageData(new ImageData(px as ImageDataArray, lienzo.width, lienzo.height), 0, 0);
+    });
+    if (etiqueta) etiqueta.textContent = `${color.nombre} ${color.codigo}`;
+  }
+
+  botones.forEach((b) => {
+    const codigo = b.dataset.color!;
+    b.addEventListener('pointerenter', (e) => e.pointerType === 'mouse' && pintar(codigo));
+    b.addEventListener('focus', () => pintar(codigo));
+    b.addEventListener('click', () => {
+      elegido = codigo;
+      botones.forEach((otro) => otro.setAttribute('aria-pressed', String(otro === b)));
+      pintar(codigo);
+    });
+  });
+
+  document.querySelector('[data-carta]')?.addEventListener('pointerleave', () => pintar(elegido));
+  pintar(elegido);
+</script>
+
+<style>
+  .bloque {
+    padding-bottom: clamp(3rem, 6vw, 5rem);
+  }
+  .hero-pagina .btn {
+    margin-top: 1.5rem;
+  }
+  .cabecera {
+    display: grid;
+    gap: 0.75rem;
+    max-width: 60ch;
+    margin-bottom: 1.75rem;
+  }
+  .cabecera h2 {
+    font-size: clamp(1.9rem, 3.5vw, 2.8rem);
+  }
+  .cabecera p {
+    color: var(--muted);
+  }
+
+  .carta {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0.75rem;
+  }
+  .tono {
+    display: grid;
+    gap: 0.15rem;
+    padding: 6px 6px 10px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--white);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+  .tono[aria-pressed='true'] {
+    border-color: var(--terra);
+    box-shadow: inset 0 0 0 1px var(--terra);
+  }
+  .muestra {
+    aspect-ratio: 3 / 2;
+    border-radius: 2px;
+    background: var(--c);
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+  }
+  .nombre {
+    padding-top: 0.25rem;
+    padding-inline: 2px;
+    font-weight: 600;
+    font-size: 0.92rem;
+  }
+  .codigo {
+    padding-inline: 2px;
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+
+  .moldes {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 1.25rem;
+  }
+  .molde canvas {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: var(--radius);
+    background: var(--paper-2);
+  }
+  .molde h3 {
+    margin-top: 0.75rem;
+    font-size: 1.35rem;
+  }
+  .molde p {
+    margin-top: 0.15rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .nota {
+    max-width: 62ch;
+    margin-top: 2rem;
+    font-size: 0.92rem;
+    color: var(--muted);
+  }
+
+  .desmoldeantes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .desmoldeantes li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.9rem 0.4rem 0.5rem;
+    border: 1px solid var(--line);
+    border-radius: 99px;
+    background: var(--white);
+    font-size: 0.92rem;
+  }
+  .desmoldeantes span {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--c);
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.2);
+  }
+</style>

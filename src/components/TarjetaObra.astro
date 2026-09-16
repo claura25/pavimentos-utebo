@@ -1,0 +1,88 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import { imagen } from '../data/imagenes';
+
+interface Props {
+  trabajo: CollectionEntry<'trabajos'>;
+  grande?: boolean;
+  servicio?: string;
+  localidad?: string;
+}
+const { trabajo, grande = false } = Astro.props;
+const { titulo, localidad, detalles, portada, servicio } = trabajo.data;
+---
+
+<a
+  class:list={['obra', { grande }]}
+  href={`/trabajos/${trabajo.id}/`}
+  data-servicio={servicio}
+  data-localidad={localidad ?? ''}
+>
+  <Image
+    src={imagen(portada)}
+    alt={titulo}
+    widths={grande ? [640, 1100] : [420, 720]}
+    sizes={grande ? '(max-width: 800px) 100vw, 50vw' : '(max-width: 800px) 100vw, 33vw'}
+  />
+  <div class="info">
+    {localidad && <span class="lugar">{localidad}</span>}
+    <h3>{titulo}</h3>
+    {detalles.length > 0 && <p>{detalles.join(' · ')}</p>}
+  </div>
+</a>
+
+<style>
+  .obra {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    border-radius: var(--radius);
+    color: #fff;
+    text-decoration: none;
+  }
+  .obra img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s;
+  }
+  .obra:hover img {
+    transform: scale(1.04);
+  }
+  .obra::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(transparent 45%, rgba(20, 18, 15, 0.85));
+  }
+  .info {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+    display: grid;
+    gap: 0.35rem;
+    padding: 1.25rem;
+  }
+  .lugar {
+    justify-self: start;
+    padding: 0.15rem 0.55rem;
+    background: var(--terra);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  h3 {
+    font-size: clamp(1.3rem, 1.8vw, 1.7rem);
+  }
+  .grande h3 {
+    font-size: clamp(1.8rem, 3vw, 2.6rem);
+  }
+  p {
+    font-size: 0.85rem;
+    color: #e6dfd3;
+  }
+</style>

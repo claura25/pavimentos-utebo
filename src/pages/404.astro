@@ -1,0 +1,60 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { navegacion } from '../data/empresa';
+---
+
+<Layout title="Página no encontrada · Pavimentos Utebo" description="La página que buscas no existe o ha cambiado de dirección.">
+  <section class="wrap error">
+    <p class="eyebrow">Error 404</p>
+    <h1>Esta página no existe</h1>
+    <p class="entradilla">
+      Puede que la dirección haya cambiado con la nueva web. Prueba desde aquí o llámanos y te lo contamos por
+      teléfono.
+    </p>
+    <ul class="enlaces">
+      {
+        navegacion.map((item) => (
+          <li>
+            <a href={item.href}>{item.texto}</a>
+          </li>
+        ))
+      }
+    </ul>
+    <a class="btn btn-primary" href="/">Volver al inicio</a>
+  </section>
+</Layout>
+
+<style>
+  .error {
+    display: grid;
+    justify-items: start;
+    gap: 1rem;
+    padding-block: clamp(4rem, 10vw, 8rem);
+  }
+  h1 {
+    font-size: clamp(2.6rem, 6vw, 4.6rem);
+  }
+  .entradilla {
+    max-width: 52ch;
+    color: var(--muted);
+  }
+  .enlaces {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0.5rem 0 1rem;
+    padding: 0;
+    list-style: none;
+  }
+  .enlaces a {
+    display: inline-block;
+    padding: 0.45rem 0.9rem;
+    border: 1px solid var(--line);
+    border-radius: 99px;
+    text-decoration: none;
+    font-size: 0.92rem;
+  }
+  .enlaces a:hover {
+    border-color: var(--ink);
+  }
+</style>

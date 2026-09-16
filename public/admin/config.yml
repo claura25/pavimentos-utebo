@@ -1,0 +1,115 @@
+# Panel de contenidos (Sveltia CMS).
+# Los cambios se guardan en el repositorio y la web se publica sola.
+# Pendiente: poner el nombre del repositorio de GitHub en "repo" (formato usuario/repositorio).
+
+backend:
+  name: github
+  repo: usuario/pavimentos-utebo
+  branch: main
+  site_domain: www.pavimentosutebo.es
+  commit_messages:
+    create: 'Añade {{collection}} «{{slug}}»'
+    update: 'Actualiza {{collection}} «{{slug}}»'
+    delete: 'Elimina {{collection}} «{{slug}}»'
+    uploadMedia: 'Sube la imagen {{path}}'
+    deleteMedia: 'Elimina la imagen {{path}}'
+
+media_folder: src/assets/servicios
+public_folder: /src/assets/servicios
+
+collections:
+  - name: trabajos
+    label: Trabajos realizados
+    label_singular: Trabajo
+    description: Cada obra publicada en la web, con sus fotos, su color y su molde.
+    folder: src/content/trabajos
+    create: true
+    slug: '{{titulo}}'
+    media_folder: /src/assets/trabajos
+    public_folder: /src/assets/trabajos
+    summary: '{{titulo}}'
+    sortable_fields: [fecha, titulo]
+    view_groups:
+      - label: Tipo de pavimento
+        field: servicio
+    fields:
+      - { name: titulo, label: Título, widget: string, hint: 'Por ejemplo: Impreso en calles en Lérida' }
+      - { name: localidad, label: Localidad, widget: string, required: false }
+      - { name: fecha, label: Fecha de la obra, widget: datetime, format: 'YYYY-MM-DD', date_format: 'DD/MM/YYYY', time_format: false }
+      - name: servicio
+        label: Tipo de pavimento
+        widget: relation
+        collection: servicios
+        value_field: '{{slug}}'
+        display_fields: [titulo]
+        search_fields: [titulo]
+      - name: detalles
+        label: Detalles
+        widget: list
+        required: false
+        hint: 'Color, molde, acabados… Cada línea aparece separada por un punto en la web.'
+        field: { name: detalle, label: Detalle, widget: string }
+      - { name: portada, label: Foto de portada, widget: image, hint: 'La que se ve en la portada y en el listado de trabajos.' }
+      - name: galeria
+        label: Galería de fotos
+        widget: list
+        required: false
+        field: { name: foto, label: Foto, widget: image }
+      - { name: destacado, label: Mostrar en la portada, widget: boolean, default: true }
+      - { name: body, label: Texto (opcional), widget: markdown, required: false }
+
+  - name: servicios
+    label: Servicios
+    label_singular: Servicio
+    description: Los acabados que ofrece la empresa. Cada uno tiene su propia página.
+    folder: src/content/servicios
+    create: true
+    slug: '{{titulo}}'
+    media_folder: /src/assets/servicios
+    public_folder: /src/assets/servicios
+    summary: '{{orden}}. {{titulo}}'
+    sortable_fields: [orden, titulo]
+    fields:
+      - { name: titulo, label: Título, widget: string }
+      - { name: resumen, label: Resumen, widget: text, hint: 'Dos o tres líneas. Es lo que se lee en la portada y en el listado.' }
+      - name: idealPara
+        label: Ideal para
+        widget: list
+        required: false
+        field: { name: uso, label: Uso, widget: string }
+      - { name: imagen, label: Foto, widget: image, required: false }
+      - { name: orden, label: Orden en el listado, widget: number, value_type: int, min: 1, default: 10 }
+      - { name: destacado, label: Destacar en la portada, widget: boolean, default: false }
+      - { name: body, label: Texto de la página, widget: markdown, required: false }
+
+  - name: ajustes
+    label: Datos de la empresa
+    files:
+      - name: empresa
+        label: Contacto y zonas
+        file: src/data/empresa.json
+        description: Teléfonos, dirección, correo y localidades donde trabajáis.
+        fields:
+          - { name: nombre, label: Nombre comercial, widget: string }
+          - { name: razonSocial, label: Razón social, widget: string }
+          - { name: eslogan, label: Eslogan, widget: string }
+          - { name: telefonoOficina, label: Teléfono de oficina, widget: string }
+          - { name: telefonoMovil, label: Teléfono móvil, widget: string }
+          - { name: contactoMovil, label: Persona de contacto del móvil, widget: string }
+          - { name: whatsapp, label: WhatsApp (con prefijo, sin espacios), widget: string }
+          - { name: email, label: Correo electrónico, widget: string }
+          - { name: instagram, label: Instagram, widget: string }
+          - { name: mapa, label: Enlace del mapa, widget: string }
+          - { name: formulario, label: Dirección de envío del formulario, widget: string, required: false, hint: 'En Netlify, escribe / para que los formularios lleguen a vuestro correo.' }
+          - name: direccion
+            label: Dirección
+            widget: object
+            fields:
+              - { name: calle, label: Calle, widget: string }
+              - { name: cp, label: Código postal, widget: string }
+              - { name: localidad, label: Localidad, widget: string }
+              - { name: provincia, label: Provincia, widget: string }
+          - name: zonas
+            label: Localidades donde habéis trabajado
+            widget: list
+            field: { name: zona, label: Localidad, widget: string }

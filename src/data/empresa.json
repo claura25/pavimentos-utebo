@@ -1,0 +1,38 @@
+{
+  "nombre": "Pavimentos Utebo",
+  "razonSocial": "Pavimentos Utebo 2012 S.L.U.",
+  "eslogan": "La mejor opción para pavimentar tu construcción",
+  "telefonoOficina": "976 617 099",
+  "telefonoMovil": "626 226 174",
+  "contactoMovil": "Valentín Rivera",
+  "whatsapp": "34626226174",
+  "email": "pavimentosutebo@gmail.com",
+  "instagram": "https://www.instagram.com/pavimentosutebo/",
+  "mapa": "https://www.google.com/maps/search/?api=1&query=Pavimentos+Utebo+Pinseque",
+  "formulario": "",
+  "direccion": {
+    "calle": "Polígono Industrial Los Leones, Nave 178 bis",
+    "cp": "50298",
+    "localidad": "Pinseque",
+    "provincia": "Zaragoza"
+  },
+  "zonas": [
+    "Zaragoza",
+    "Utebo",
+    "Pinseque",
+    "Figueruelas",
+    "Cadrete",
+    "Santa Fe",
+    "Sobradiel",
+    "Garrapinillos",
+    "Miralbueno",
+    "El Burgo de Ebro",
+    "Épila",
+    "Gallur",
+    "Borja",
+    "Tarazona",
+    "Ejea de los Caballeros",
+    "Soria",
+    "Lérida"
+  ]
+}

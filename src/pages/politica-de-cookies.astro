@@ -1,0 +1,52 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { empresa } from '../data/empresa';
+---
+
+<Layout
+  title="Política de cookies · Pavimentos Utebo"
+  description="Esta web no utiliza cookies de análisis ni de publicidad."
+>
+  <header class="hero-pagina wrap">
+    <ul class="migas">
+      <li><a href="/">Inicio</a></li>
+      <li>/</li>
+      <li>Política de cookies</li>
+    </ul>
+    <h1>Política de cookies</h1>
+  </header>
+
+  <section class="wrap texto">
+    <div class="prosa">
+      <h2>Esta web no utiliza cookies</h2>
+      <p>
+        Actualmente el sitio no instala cookies de análisis, de publicidad ni de redes sociales, y no recoge tu
+        navegación. Por eso no verás ninguna ventana pidiéndote consentimiento.
+      </p>
+
+      <h2>Qué ocurre cuando usas el simulador</h2>
+      <p>
+        El simulador de pavimentos funciona por completo en tu navegador: las imágenes se generan en tu dispositivo y
+        no se envía a ningún servidor la combinación de color y molde que elijas.
+      </p>
+
+      <h2>Enlaces a otros servicios</h2>
+      <p>
+        Desde la web puedes ir a WhatsApp o a Instagram. Esos servicios tienen sus propias políticas de cookies y
+        privacidad, que se aplican cuando sales de nuestra web.
+      </p>
+
+      <h2>Si esto cambia</h2>
+      <p>
+        Si en el futuro añadimos herramientas de medición o mapas incrustados, actualizaremos esta página y pediremos
+        tu consentimiento antes de instalar ninguna cookie. Para cualquier duda puedes escribirnos a {empresa.email}.
+      </p>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .texto {
+    padding-bottom: clamp(3.5rem, 7vw, 5.5rem);
+  }
+</style>

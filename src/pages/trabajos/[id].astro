@@ -1,0 +1,277 @@
+---
+import { getImage } from 'astro:assets';
+import { getCollection, type CollectionEntry } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import LlamadaFinal from '../../components/LlamadaFinal.astro';
+import { imagen } from '../../data/imagenes';
+
+export async function getStaticPaths() {
+  const trabajos = (await getCollection('trabajos')).sort((a, b) => b.data.fecha.valueOf() - a.data.fecha.valueOf());
+  return trabajos.map((trabajo, i) => ({
+    params: { id: trabajo.id },
+    props: {
+      trabajo,
+      anterior: trabajos[i - 1] as CollectionEntry<'trabajos'> | undefined,
+      siguiente: trabajos[i + 1] as CollectionEntry<'trabajos'> | undefined,
+    },
+  }));
+}
+
+const { trabajo, anterior, siguiente } = Astro.props;
+const { titulo, localidad, fecha, servicio, detalles, galeria, portada } = trabajo.data;
+
+const servicios = await getCollection('servicios');
+const suServicio = servicios.find((s) => s.id === servicio);
+
+const fotos = (galeria.length > 0 ? galeria : [portada]).map(imagen);
+const imagenes = await Promise.all(
+  fotos.map(async (foto) => ({
+    mini: await getImage({ src: foto, width: 760, height: 570, fit: 'cover', format: 'webp' }),
+    grande: await getImage({ src: foto, width: 1500, format: 'webp' }),
+  })),
+);
+
+const mes = fecha.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+---
+
+<Layout title={`${titulo} | Pavimentos Utebo`} description={`${titulo}. ${detalles.join('. ')}`.trim()}>
+  <header class="hero-pagina wrap">
+    <ul class="migas">
+      <li><a href="/">Inicio</a></li>
+      <li>/</li>
+      <li><a href="/trabajos/">Trabajos</a></li>
+      <li>/</li>
+      <li>{titulo}</li>
+    </ul>
+    <h1>{titulo}</h1>
+    <dl class="datos">
+      {
+        localidad && (
+          <div>
+            <dt>Dónde</dt>
+            <dd>{localidad}</dd>
+          </div>
+        )
+      }
+      <div>
+        <dt>Cuándo</dt>
+        <dd>{mes}</dd>
+      </div>
+      {
+        suServicio && (
+          <div>
+            <dt>Acabado</dt>
+            <dd>
+              <a href={`/servicios/${suServicio.id}/`}>{suServicio.data.titulo}</a>
+            </dd>
+          </div>
+        )
+      }
+      {
+        detalles.length > 0 && (
+          <div>
+            <dt>Detalles</dt>
+            <dd>{detalles.join(' · ')}</dd>
+          </div>
+        )
+      }
+    </dl>
+  </header>
+
+  <section class="wrap galeria">
+    {
+      imagenes.map((img, i) => (
+        <button type="button" class="foto" data-grande={img.grande.src} data-indice={i}>
+          <img
+            src={img.mini.src}
+            width={img.mini.attributes.width}
+            height={img.mini.attributes.height}
+            alt={`${titulo}, foto ${i + 1}`}
+            loading={i < 2 ? 'eager' : 'lazy'}
+            decoding="async"
+          />
+          <span class="sr-only">Ampliar foto {i + 1}</span>
+        </button>
+      ))
+    }
+  </section>
+
+  <nav class="wrap paso" aria-label="Otros trabajos">
+    {anterior ? <a href={`/trabajos/${anterior.id}/`}>← {anterior.data.titulo}</a> : <span />}
+    <a class="todos" href="/trabajos/">Todos los trabajos</a>
+    {siguiente ? <a class="der" href={`/trabajos/${siguiente.id}/`}>{siguiente.data.titulo} →</a> : <span />}
+  </nav>
+
+  <LlamadaFinal titulo="¿Quieres algo parecido en tu obra?" />
+
+  <dialog class="lupa" data-lupa>
+    <button type="button" class="cerrar" data-cerrar aria-label="Cerrar">✕</button>
+    <button type="button" class="mover izq" data-mover="-1" aria-label="Foto anterior">‹</button>
+    <img data-lupa-img alt={titulo} />
+    <button type="button" class="mover der" data-mover="1" aria-label="Foto siguiente">›</button>
+  </dialog>
+</Layout>
+
+<script>
+  const lupa = document.querySelector<HTMLDialogElement>('[data-lupa]');
+  const imagen = document.querySelector<HTMLImageElement>('[data-lupa-img]');
+  const fotos = [...document.querySelectorAll<HTMLButtonElement>('.foto')];
+  let actual = 0;
+
+  const mostrar = (i: number) => {
+    actual = (i + fotos.length) % fotos.length;
+    if (imagen) imagen.src = fotos[actual].dataset.grande!;
+  };
+
+  fotos.forEach((foto, i) =>
+    foto.addEventListener('click', () => {
+      mostrar(i);
+      lupa?.showModal();
+    }),
+  );
+
+  document.querySelector('[data-cerrar]')?.addEventListener('click', () => lupa?.close());
+  document.querySelectorAll<HTMLButtonElement>('[data-mover]').forEach((b) =>
+    b.addEventListener('click', () => mostrar(actual + Number(b.dataset.mover))),
+  );
+  lupa?.addEventListener('click', (e) => {
+    if (e.target === lupa) lupa.close();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (!lupa?.open) return;
+    if (e.key === 'ArrowRight') mostrar(actual + 1);
+    if (e.key === 'ArrowLeft') mostrar(actual - 1);
+  });
+</script>
+
+<style>
+  .datos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem 2.5rem;
+    margin: 1.5rem 0 0;
+  }
+  .datos dt {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .datos dd {
+    margin: 0.25rem 0 0;
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .datos a {
+    color: var(--terra);
+  }
+
+  .galeria {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    padding-bottom: clamp(2rem, 4vw, 3rem);
+  }
+  .foto {
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--paper-2);
+    cursor: zoom-in;
+  }
+  .foto img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    transition: transform 0.5s;
+  }
+  .foto:hover img {
+    transform: scale(1.04);
+  }
+
+  .paso {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: clamp(3rem, 6vw, 4.5rem);
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .paso a {
+    text-decoration: none;
+  }
+  .paso a:hover {
+    color: var(--terra);
+  }
+  .todos {
+    color: var(--muted);
+  }
+
+  .lupa {
+    width: min(1200px, 94vw);
+    max-width: none;
+    padding: 0;
+    border: 0;
+    background: transparent;
+  }
+  .lupa::backdrop {
+    background: rgba(20, 18, 15, 0.9);
+  }
+  .lupa img {
+    width: 100%;
+    max-height: 86vh;
+    object-fit: contain;
+    border-radius: var(--radius);
+  }
+  .cerrar,
+  .mover {
+    position: absolute;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(255, 253, 250, 0.9);
+    font-size: 1.4rem;
+    cursor: pointer;
+  }
+  .cerrar {
+    top: -14px;
+    right: -14px;
+  }
+  .mover {
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  .izq {
+    left: 10px;
+  }
+  .der {
+    right: 10px;
+  }
+
+  @media (max-width: 800px) {
+    .galeria {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (max-width: 520px) {
+    .galeria {
+      grid-template-columns: 1fr;
+    }
+    .paso {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>

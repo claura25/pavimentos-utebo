@@ -1,0 +1,68 @@
+---
+import '@fontsource-variable/inter';
+import '@fontsource/barlow-condensed/600.css';
+import '@fontsource/barlow-condensed/700.css';
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import MobileBar from '../components/MobileBar.astro';
+import { empresa } from '../data/empresa';
+
+interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const d = empresa.direccion;
+
+const negocio = {
+  '@context': 'https://schema.org',
+  '@type': 'GeneralContractor',
+  name: empresa.nombre,
+  legalName: empresa.razonSocial,
+  url: Astro.site?.href,
+  telephone: ['+34976617099', '+34626226174'],
+  email: empresa.email,
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: d.calle,
+    postalCode: d.cp,
+    addressLocality: d.localidad,
+    addressRegion: d.provincia,
+    addressCountry: 'ES',
+  },
+  areaServed: empresa.zonas,
+  sameAs: [empresa.instagram],
+};
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="theme-color" content="#1d1b18" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="es_ES" />
+    <meta property="og:site_name" content={empresa.nombre} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <script type="application/ld+json" set:html={JSON.stringify(negocio)} />
+  </head>
+  <body>
+    <a class="skip" href="#contenido">Saltar al contenido</a>
+    <Header />
+    <main id="contenido">
+      <slot />
+    </main>
+    <Footer />
+    <MobileBar />
+  </body>
+</html>
